@@ -1,0 +1,32 @@
+services:
+  database:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports: 
+      - "5432:5432"
+    volumes:
+      # - "./init.sql:/docker-entrypoint-initdb.d/init.sql"
+      - "./data:/var/lib/postgresql/data:z"
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    restart: always
+    depends_on: 
+      - database
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./:$GOPATH/src/campus-fora-backend/
+volumes:
+  data:
