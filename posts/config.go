@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	_ "github.com/campus-fora/config"
 	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -14,7 +16,7 @@ var rdb *redis.Client
 
 func initCache() {
 	redis_client := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
+		Addr:     "redis:" + viper.GetString("REDIS.PORT"),
 		Password: "",
 		DB:       0,
 	})
@@ -30,10 +32,10 @@ func initCache() {
 }
 
 func initDB() {
-	host := "database"
-	port := "5432"
+	host := viper.GetString("DATABASE.HOST")
+	port := viper.GetString("DATABASE.PORT")
 	password := "postkaadmin"
-	dbName := "posts"
+	dbName := viper.GetString("DBNAME.POSTS")
 	user := "postsadmin"
 
 	dsn := "host=" + host + " user=" + user + " password=" + password
@@ -57,7 +59,7 @@ func initDB() {
 	fmt.Println("Successfully connected to posts DB")
 }
 
-func Init() {
+func init() {
 	initDB()
 	initCache()
 }

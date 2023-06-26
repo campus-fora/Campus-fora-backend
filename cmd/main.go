@@ -1,31 +1,30 @@
 package main
 
 import (
-	"campus-fora/posts"
-	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
+	_ "github.com/campus-fora/config"
 )
 
 func main() {
+	log.Print("Starting server")
 	var g errgroup.Group
 	gin.SetMode(gin.ReleaseMode)
 
-	r := gin.Default()
-
-	posts.InitRouters(r)
-
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: r,
-	}
+	g.Go(func() error {
+		return postsServer().ListenAndServe()
+	})
 
 	g.Go(func() error {
-		return server.ListenAndServe()
+		return notificationServer().ListenAndServe()
 	})
-	posts.Init()
 
+	g.Go(func() error {
+		return likesServer().ListenAndServe()
+	})
+	
 	err := g.Wait()
 	if err != nil {
 		panic(err)

@@ -5,9 +5,9 @@ import (
 )
 
 func InitRouters(router *gin.Engine) {
-	posts := router.Group("/")
+	posts := router.Group("api/posts")
 	{
-		posts.GET("threads", getAllThreadsDetail)
-		posts.POST("postThread", postThread)
+		posts.GET("/threads", getAllThreadsDetail)
+		posts.POST("/postThread", postThread)
 	}
 }

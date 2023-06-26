@@ -12,7 +12,7 @@ type Thread struct {
 	Content       string `json:"content"`
 	CreatedByUser string `json:"created_by_user"`
 	Posts         []Post `gorm:"foreignKey:Parent_ID" json:"posts"`
-	Tags          []Tag `gorm:"many2many:thread_tags;" json:"tags"`
+	Tags          []Tag  `gorm:"many2many:thread_tags;" json:"tags"`
 }
 
 type Tag struct {
@@ -37,9 +37,9 @@ type Comment struct {
 }
 
 type thread_detail struct {
-	ID            uint   `json:"id"`
+	ID            uint      `json:"id"`
 	CreatedAt     time.Time `json:"created_at"`
-	Title         string `json:"title"`
-	Content       string `json:"content"`
-	CreatedByUser string `json:"created_by_user"`
+	Title         string    `json:"title"`
+	Content       string    `json:"content"`
+	CreatedByUser string    `json:"created_by_user"`
 }

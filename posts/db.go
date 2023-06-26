@@ -14,3 +14,8 @@ func createThread(ctx *gin.Context, thread *Thread) error {
 	tx := db.WithContext(ctx).Create(thread)
 	return tx.Error
 }
+
+func FetchAllPostsWithId(ctx *gin.Context, postIds []uint, posts *[]Thread) error {
+	tx := db.WithContext(ctx).Model(&Post{}).Where("id IN ?", postIds).Find(&[]Post{})
+	return tx.Error
+}

@@ -1,0 +1,28 @@
+SERVER:
+  READTIMEOUT: 10
+  WRITETIMEOUT: 15
+DATABASE:
+  HOST: "database"
+  PORT: 5432
+DBNAME:
+  POSTS: "posts"
+  USERS: "users"
+REDIS:
+  PORT: 6379
+  PASSWORD: ""
+NOTIFICATION:
+  MAX_DEVICES: 5
+PORT:
+  POSTS: 8080
+  USERS: 8081
+  NOTIFICATION: 8082
+  LIKES: 8083
+MQ:
+  URI: "amqp://user:password@MQ:5672/"
+  EXCHANGE: "vote_messages"
+  PUBLISHERTIMEOUT: 5
+  UPDATERQUEUE: "updater_queue"
+  BATCHUPDATERQUEUE: "batch_updater_queue"
+  PROCESSING_INTERVAL: 60
+  BATCHSIZE: 10
+  

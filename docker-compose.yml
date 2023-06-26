@@ -17,16 +17,31 @@ services:
     restart: always
     ports:
       - "6379:6379"
+  MQ:
+    image: rabbitmq:3
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+    ports:
+      - 5672:5672
   server:
     build:
       context: .
       dockerfile: Dockerfile.server
     restart: always
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS="./firebase-adminsdk.json"
     depends_on: 
       - database
+      - redis
+      - MQ
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
+      - "8082:8082"
+      - "8083:8083"
     volumes:
-      - ./:$GOPATH/src/campus-fora-backend/
+      - ./:/go/src/campus-fora-backend
+    privileged: true
 volumes:
   data:

@@ -9,13 +9,13 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type all_thread_response struct{
-	ID            uint   `json:"id"`
+type all_thread_response struct {
+	ID            uint      `json:"id"`
 	CreatedAt     time.Time `json:"created_at"`
-	Title         string `json:"title"`
-	Content       string `json:"content"`
-	CreatedByUser string `json:"created_by_user"`
-	Tags		  []Tag	`json:"tags"`
+	Title         string    `json:"title"`
+	Content       string    `json:"content"`
+	CreatedByUser string    `json:"created_by_user"`
+	Tags          []Tag     `json:"tags"`
 }
 
 func getAllThreadsDetail(ctx *gin.Context) {
@@ -27,7 +27,7 @@ func getAllThreadsDetail(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, threads)
 		return
 	}
-	if(err == redis.Nil){
+	if err == redis.Nil {
 		var threads []Thread
 		err = fetchAllThreadDetails(ctx, &threads)
 		if err != nil {
