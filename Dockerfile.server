@@ -1,0 +1,17 @@
+FROM golang:1.20
+
+WORKDIR /go/src/campus-fora-backend
+
+RUN go install github.com/cosmtrek/air@latest
+
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+COPY . .
+
+EXPOSE 8080 8082 8083
+
+ENV GO111MODULE=on
+ENV PATH="${PATH}:/go/bin"
+
+CMD ["air"]
