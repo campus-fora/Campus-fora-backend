@@ -1,3 +1,0 @@
-package users
-
-// func GetUserDetail()
