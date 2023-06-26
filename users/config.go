@@ -28,7 +28,7 @@ func initDB() {
 
 	db = database
 
-	err = db.AutoMigrate(&UserDetails{}, &User{}, &UserQuestions{}, &NotifTokens{}, &Notification{})
+	err = db.AutoMigrate(&User{}, &UserDetails{}, &UserQuestions{}, &NotifTokens{}, &Notification{})
 	if err != nil {
 		log.Fatal("Error in automigrating users DB:\n", err)
 		panic(err)

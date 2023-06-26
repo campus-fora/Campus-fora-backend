@@ -10,7 +10,7 @@ func updateUserLike(postId uint, userId uint, voteType int) error {
 	return tx.Error
 }
 
-func updateBatchVoteCount(postId uint, netVoteCount int) error {
+func updateBatchLikeCount(postId uint, netVoteCount int) error {
 	tx := db.Model(&DailyLikeCount{}).Where("post_id = ?", postId).Update("count", gorm.Expr("count + ?", netVoteCount))
 	return tx.Error
 }

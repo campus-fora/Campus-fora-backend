@@ -4,13 +4,19 @@ import (
 	"bytes"
 	"encoding/gob"
 	"log"
+	"sync"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/viper"
 )
 
-var postLikeCountBuffer map[int]int
+type PostLikeCountBuffer struct {
+	mu sync.Mutex
+	hmap map[int]int
+}
+
+var postLikeCountBuffer PostLikeCountBuffer
 
 func updater() {
 	defer ch.Updater.Close()
@@ -65,6 +71,8 @@ func updater() {
 		return
 	}
 
+	voteRequestsCh := make(chan newVoteRequest)
+	createWorkers(voteRequestsCh)
 	for msg := range msgs {
 		var voteRequest newVoteRequest
 		err := gob.NewDecoder(bytes.NewReader(msg.Body)).Decode(&voteRequest)
@@ -72,12 +80,27 @@ func updater() {
 			log.Println("Error in decoding vote request struct")
 			continue
 		}
-
+		voteRequestsCh <- voteRequest
 		log.Print("Recieved vote request: ", voteRequest.PostID, voteRequest.UserID, voteRequest.VoteType)
 		// err = updateUserLike(voteRequest.PostID, voteRequest.UserID, int(voteRequest.VoteType))
 		// if err != nil {
 		// 	log.Fatal("Error updating user like: ", err)
 		// }
+	}
+}
+
+func createWorkers(voteRequestsCh chan newVoteRequest) {
+	workerCount := viper.GetInt("MQ.WORKER_COUNT")
+	for i := 0; i < workerCount; i++ {
+		go worker(voteRequestsCh, i+1)
+	}
+}
+
+func worker(voteRequestsCh chan newVoteRequest, id int) { 
+	// open db connection
+	for voteRequest := range voteRequestsCh {
+		log.Println("worker",id, ":" , voteRequest)
+		time.Sleep(10)
 	}
 }
 
@@ -141,14 +164,14 @@ func batchUpdater() {
 	for {
 		select {
 		case message := <-msgs:
-
 			updatePostLikeCountBuffer(message)
-
 		case <-timer.C:
+			// postLikeCountBuffer.mu.Lock()
 			processBufferedMessages(buffer)
 			acknowledgeMessages(buffer)
 			buffer = nil
-			postLikeCountBuffer = nil
+			postLikeCountBuffer.hmap = nil
+			// postLikeCountBuffer.mu.Unlock()
 		}
 	}
 }
@@ -160,7 +183,9 @@ func updatePostLikeCountBuffer(message amqp.Delivery) {
 		log.Println("Error in decoding vote request struct")
 		return
 	}
-	postLikeCountBuffer[int(voteRequest.PostID)] += int(voteRequest.VoteType)
+	// postLikeCountBuffer.mu.Lock()
+	// defer postLikeCountBuffer.mu.Unlock()
+	// postLikeCountBuffer.hmap[int(voteRequest.PostID)] += int(voteRequest.VoteType)
 }
 
 func processBufferedMessages(buffer []amqp.Delivery) {
@@ -176,6 +201,7 @@ func processBufferedMessages(buffer []amqp.Delivery) {
 			continue
 		}
 		log.Print("Message: ", voteRequest)
+		// updateBatchLikeCount(voteRequest.)
 	}
 	log.Println()
 }
