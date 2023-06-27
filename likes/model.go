@@ -1,9 +1,5 @@
 package likes
 
-import (
-	"gorm.io/gorm"
-)
-
 const (
 	Like     = 1
 	Dislike  = -1
@@ -11,22 +7,21 @@ const (
 )
 
 type UserLike struct {
-	gorm.Model
-	UserID   uint `json:"user_id"`
-	PostID   uint `json:"post_id"`
-	VoteType int  `json:"vote_type"`
+	UserID   uint `gorm:"column:user_id;index:user_like_idx;primaryKey"`
+	PostID   uint `gorm:"column:post_id;index:user_like_idx;primaryKey"`
+	VoteType int  `gorm:"vote_type"`
 }
 
 type TotalLikeCount struct {
-	gorm.Model
-	PostID uint `json:"post_id"`
-	Count  uint `json:"count"`
+	PostID       uint `gorm:"column:post_id";"index:total_like_idx";"primaryKey"`
+	LikeCount    int  `gorm:"like_count"`
+	DislikeCount int  `gorm:dislike_count`
 }
 
 type DailyLikeCount struct {
-	gorm.Model
-	PostID uint `json:"post_id"`
-	Count  uint `json:"count"`
+	PostID       uint `gorm:"post_id;primaryKey"`
+	LikeCount    int  `gorm:"like_count"`
+	DislikeCount int  `gorm:dislike_count`
 }
 
 type newVoteRequest struct {

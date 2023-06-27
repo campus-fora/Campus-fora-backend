@@ -9,11 +9,16 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/viper"
+	"gorm.io/gorm"
 )
 
+type LikeCountBufferValues struct{
+	likeCnt   int
+	dislikeCnt int
+}
 type LikeCountBuffer struct {
-	mu sync.Mutex
-	hmap map[uint]int
+	mu   sync.Mutex
+	hmap map[uint] LikeCountBufferValues
 }
 
 func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(message amqp.Delivery) {
@@ -23,9 +28,24 @@ func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(message amqp.Deliv
 		log.Println("Error in decoding vote request struct")
 		return
 	}
+	oldVoteStatus, err:= fetchLikeStatusWithoutContext(uint(voteRequest.PostID), uint(voteRequest.UserID))
+	if err!=nil {
+		log.Println("Error in fetching like status")
+		return
+	}
+
+	// oldVoteStatus := 0
+	if (oldVoteStatus == voteRequest.VoteType) {
+		return;	
+	}
 	likeCountBuffer.mu.Lock()
 	defer likeCountBuffer.mu.Unlock()
-	likeCountBuffer.hmap[voteRequest.PostID] += int(voteRequest.VoteType)
+	if(voteRequest.VoteType == Like) {
+		likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt + 1, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + oldVoteStatus}
+	}
+	if(voteRequest.VoteType == Dislike) {
+		likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt - oldVoteStatus, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + 1}
+	}
 }
 
 func openBatchUpdaterQueue() (<-chan amqp.Delivery, error) {
@@ -84,12 +104,19 @@ func openBatchUpdaterQueue() (<-chan amqp.Delivery, error) {
 }
 
 func batchUpdater() {
+
+	batchUpdaterDB, err := openDBConn()
+	if err != nil {
+		log.Print("Error in connecting to likes DB:\n", err)
+		panic(err)
+	}
+
 	defer ch.BatchUpdater.Close()
 	processingInterval := time.Duration(viper.GetInt("MQ.PROCESSING_INTERVAL")) * time.Second
 	timer := time.NewTicker(processingInterval)
 
 	var likeCountBuffer LikeCountBuffer
-	likeCountBuffer.hmap = make(map[uint]int)
+	likeCountBuffer.hmap = make(map[uint]LikeCountBufferValues)
 	var buffer []amqp.Delivery
 
 	msgs, err := openBatchUpdaterQueue()
@@ -97,7 +124,7 @@ func batchUpdater() {
 		return
 	}
 
-	defer processBufferedMessages(buffer,&likeCountBuffer)
+	defer processBufferedMessages(buffer, &likeCountBuffer, batchUpdaterDB)
 	defer acknowledgeMessages(buffer)
 	for {
 		select {
@@ -105,14 +132,14 @@ func batchUpdater() {
 			likeCountBuffer.updatelikeCountBuffer(message)
 			buffer = append(buffer, message)
 		case <-timer.C:
-			processBufferedMessages(buffer,&likeCountBuffer)
+			processBufferedMessages(buffer, &likeCountBuffer, batchUpdaterDB)
 			acknowledgeMessages(buffer)
 			buffer = nil
 		}
 	}
 }
 
-func processBufferedMessages(buffer []amqp.Delivery, likeCountBuffer *LikeCountBuffer) {
+func processBufferedMessages(buffer []amqp.Delivery, likeCountBuffer *LikeCountBuffer, batchUpdaterDB *gorm.DB) {
 	if len(buffer) == 0 {
 		return
 	}
@@ -120,10 +147,13 @@ func processBufferedMessages(buffer []amqp.Delivery, likeCountBuffer *LikeCountB
 
 	likeCountBuffer.mu.Lock()
 	defer likeCountBuffer.mu.Unlock()
-	for pid, likeCnt := range likeCountBuffer.hmap {
-		updateBatchLikeCount(pid, likeCnt)
+	for pid, newLikeCnt := range likeCountBuffer.hmap {
+		err := updateBatchLikeCount(batchUpdaterDB, pid, newLikeCnt)
+		if err != nil {
+			log.Printf("Error in updating likes count for pid: %d \n", pid)
+		}
 	}
-	likeCountBuffer.hmap = make(map[uint]int)
+	likeCountBuffer.hmap = make(map[uint]LikeCountBufferValues)
 }
 
 func acknowledgeMessages(buffer []amqp.Delivery) {
@@ -145,5 +175,5 @@ func logBuffer(buffer []amqp.Delivery) {
 			continue
 		}
 		log.Print("Message: ", voteRequest)
-	} 
+	}
 }

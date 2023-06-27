@@ -54,6 +54,7 @@ func initDB() {
 	}
 
 	log.Println("Successfully connected to likes DB")
+	log.Println(db)
 }
 
 func openMQChannels(conn *amqp.Connection) error {
@@ -90,14 +91,14 @@ func initMQ() {
 		log.Printf("Error in opening AMQP Channels : %s", err)
 		return
 	}
-
-	go publisher()
-	go updater()
-	go batchUpdater()
 }
 
 func init() {
 	initDB()
 	initMQ()
 	voteCh = make(chan newVoteRequest)
+
+	go publisher()
+	go updater()
+	go batchUpdater()
 }

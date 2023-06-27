@@ -89,8 +89,10 @@ func createWorkers(voteRequestsCh chan newVoteRequest) {
 func worker(voteRequestsCh chan newVoteRequest, id int) {
 	workerDB, err := openDBConn()
 	if err != nil {
-		log.Printf("Error in opening db connection for worker %d: %s",id, err)
+		log.Printf("Error in opening db connection for worker %d: %s", id, err)
+		return
 	}
+	log.Print("Worker ", id, workerDB)
 
 	for voteRequest := range voteRequestsCh {
 		log.Println("worker", id, ":", voteRequest)
