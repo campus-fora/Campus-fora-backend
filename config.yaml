@@ -17,6 +17,7 @@ PORT:
   USERS: 8081
   NOTIFICATION: 8082
   LIKES: 8083
+  FOLLOW: 8084
 MQ:
   URI: "amqp://user:password@MQ:5672/"
   EXCHANGE: "vote_messages"

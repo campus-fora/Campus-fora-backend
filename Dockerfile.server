@@ -2,6 +2,9 @@ FROM golang:1.20
 
 WORKDIR /go/src/campus-fora-backend
 
+RUN apt-get update
+RUN apt-get install -y vim nginx
+
 RUN go install github.com/cosmtrek/air@latest
 
 COPY go.mod go.sum ./
@@ -9,9 +12,12 @@ RUN go mod download && go mod verify
 
 COPY . .
 
-EXPOSE 8080 8082 8083
+RUN rm /etc/nginx/sites-enabled/default
+RUN ln -s  /go/src/campus-fora-backend/nginx.conf /etc/nginx/sites-enabled/default
+
+EXPOSE 80
 
 ENV GO111MODULE=on
 ENV PATH="${PATH}:/go/bin"
 
-CMD ["air"]
+CMD ["./start.sh"]
