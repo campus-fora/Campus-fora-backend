@@ -13,7 +13,7 @@ import (
 
 type LikeCountBuffer struct {
 	mu sync.Mutex
-	hmap map[int]int
+	hmap map[uint]int
 }
 
 func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(message amqp.Delivery) {
@@ -25,8 +25,7 @@ func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(message amqp.Deliv
 	}
 	likeCountBuffer.mu.Lock()
 	defer likeCountBuffer.mu.Unlock()
-	likeCountBuffer.hmap[int(voteRequest.PostID)] = 0
-	likeCountBuffer.hmap[int(voteRequest.PostID)] = likeCountBuffer.hmap[int(voteRequest.PostID)] + int(voteRequest.VoteType)
+	likeCountBuffer.hmap[voteRequest.PostID] += int(voteRequest.VoteType)
 }
 
 func openBatchUpdaterQueue() (<-chan amqp.Delivery, error) {
@@ -88,10 +87,9 @@ func batchUpdater() {
 	defer ch.BatchUpdater.Close()
 	processingInterval := time.Duration(viper.GetInt("MQ.PROCESSING_INTERVAL")) * time.Second
 	timer := time.NewTicker(processingInterval)
-	
 
 	var likeCountBuffer LikeCountBuffer
-	likeCountBuffer.hmap = make(map[int]int)
+	likeCountBuffer.hmap = make(map[uint]int)
 	var buffer []amqp.Delivery
 
 	msgs, err := openBatchUpdaterQueue()
@@ -118,20 +116,14 @@ func processBufferedMessages(buffer []amqp.Delivery, likeCountBuffer *LikeCountB
 	if len(buffer) == 0 {
 		return
 	}
-	log.Println("Processing batch:")
+	logBuffer(buffer)
+
 	likeCountBuffer.mu.Lock()
 	defer likeCountBuffer.mu.Unlock()
-	for _, msg := range buffer {
-		var voteRequest newVoteRequest
-		err := gob.NewDecoder(bytes.NewReader(msg.Body)).Decode(&voteRequest)
-		if err != nil {
-			log.Println("Error in decoding vote request struct")
-			continue
-		}
-		log.Print("Message: ", voteRequest)
-		// updateBatchLikeCount(voteRequest.)
+	for pid, likeCnt := range likeCountBuffer.hmap {
+		updateBatchLikeCount(pid, likeCnt)
 	}
-	likeCountBuffer.hmap = make(map[int]int)
+	likeCountBuffer.hmap = make(map[uint]int)
 }
 
 func acknowledgeMessages(buffer []amqp.Delivery) {
@@ -141,4 +133,17 @@ func acknowledgeMessages(buffer []amqp.Delivery) {
 	for _, msg := range buffer {
 		msg.Ack(false)
 	}
+}
+
+func logBuffer(buffer []amqp.Delivery) {
+	log.Println("Processing batch:")
+	for _, msg := range buffer {
+		var voteRequest newVoteRequest
+		err := gob.NewDecoder(bytes.NewReader(msg.Body)).Decode(&voteRequest)
+		if err != nil {
+			log.Println("Error in decoding vote request struct")
+			continue
+		}
+		log.Print("Message: ", voteRequest)
+	} 
 }

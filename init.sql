@@ -9,3 +9,9 @@ CREATE ROLE usersadmin WITH LOGIN PASSWORD 'userkaadmin';
 GRANT ALL PRIVILEGES ON DATABASE users TO usersadmin;
 \c users postgres
 GRANT ALL ON SCHEMA public TO usersadmin;
+
+CREATE DATABASE likes;
+CREATE ROLE likesadmin WITH LOGIN PASSWORD 'likekaadmin';
+GRANT ALL PRIVILEGES ON DATABASE likes TO likesadmin;
+\c likes postgres
+GRANT ALL ON SCHEMA public TO likesadmin;

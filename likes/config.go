@@ -1,9 +1,8 @@
 package likes
 
 import (
-	"fmt"
 	"log"
-	
+
 	_ "github.com/campus-fora/config"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
@@ -12,22 +11,22 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type RabbitMQChannels struct {
+type MQChannels struct {
 	Publisher    *amqp.Channel
 	Updater      *amqp.Channel
 	BatchUpdater *amqp.Channel
 }
 
-var ch RabbitMQChannels
+var ch MQChannels
 var db *gorm.DB
 var voteCh chan newVoteRequest
 
-func initDB() {
+func openDBConn() (*gorm.DB, error) {
 	host := viper.GetString("DATABASE.HOST")
 	port := viper.GetString("DATABASE.PORT")
-	password := viper.GetString("DATABASE.PASSWORD")
-	dbName := viper.GetString("DATABASE.DBNAME")
-	user := viper.GetString("DATABASE.USER") + viper.GetString("DATABASE.DBNAME")
+	password := "likekaadmin"
+	dbName := viper.GetString("DBNAME.LIKES")
+	user :=  viper.GetString("DBNAME.LIKES") + viper.GetString("DATABASE.USER")
 
 	dsn := "host=" + host + " user=" + user + " password=" + password
 	dsn += " dbname=" + dbName + " port=" + port + " sslmode=disable TimeZone=Asia/Kolkata"
@@ -35,19 +34,26 @@ func initDB() {
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Print("Error in opening connection to posts DB:\n", err)
-		panic(err)
+		return nil, err
 	}
 
-	db = database
+	return database, nil
+}
+
+func initDB() {
+	db, err := openDBConn()
+	if err != nil {
+		log.Print("Error in connecting to likes DB:\n", err)
+		panic(err)
+	}
 
 	err = db.AutoMigrate(&UserLike{}, &TotalLikeCount{}, &DailyLikeCount{})
 	if err != nil {
-		log.Print("Error in automigrating posts DB:\n", err)
+		log.Print("Error in automigrating likes DB:\n", err)
 		panic(err)
 	}
 
-	log.Println("Successfully connected to posts DB")
+	log.Println("Successfully connected to likes DB")
 }
 
 func openMQChannels(conn *amqp.Connection) error {
@@ -90,16 +96,8 @@ func initMQ() {
 	go batchUpdater()
 }
 
-func processBatch(batch []amqp.Delivery) {
-	fmt.Println("Processing batch:")
-	for _, msg := range batch {
-		fmt.Printf("Message: %s\n", msg.Body)
-	}
-	fmt.Println()
-}
-
 func init() {
-	// initDB()
+	initDB()
 	initMQ()
 	voteCh = make(chan newVoteRequest)
 }

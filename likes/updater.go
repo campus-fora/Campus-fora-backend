@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/gob"
 	"log"
-	"time"
 
 	"github.com/spf13/viper"
 )
@@ -87,10 +86,17 @@ func createWorkers(voteRequestsCh chan newVoteRequest) {
 	}
 }
 
-func worker(voteRequestsCh chan newVoteRequest, id int) { 
-	// open db connection
+func worker(voteRequestsCh chan newVoteRequest, id int) {
+	workerDB, err := openDBConn()
+	if err != nil {
+		log.Printf("Error in opening db connection for worker %d: %s",id, err)
+	}
+
 	for voteRequest := range voteRequestsCh {
-		log.Println("worker",id, ":" , voteRequest)
-		time.Sleep(10)
+		log.Println("worker", id, ":", voteRequest)
+		err = updateUserLikeStatus(workerDB, voteRequest.PostID, voteRequest.UserID, voteRequest.VoteType)
+		if err != nil {
+			log.Printf("WORKER %d : Error in updating like status for user %d and post %d", id, voteRequest.UserID, voteRequest.PostID)
+		}
 	}
 }

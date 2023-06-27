@@ -5,13 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func updateUserLike(postId uint, userId uint, voteType int) error {
-	tx := db.Model(&UserLike{}).FirstOrCreate(&UserLike{}, &UserLike{PostID: postId, UserID: userId, VoteType: voteType})
-	return tx.Error
-}
-
 func updateBatchLikeCount(postId uint, netVoteCount int) error {
-	tx := db.Model(&DailyLikeCount{}).Where("post_id = ?", postId).Update("count", gorm.Expr("count + ?", netVoteCount))
+	tx := db.Model(&DailyLikeCount{}).FirstOrCreate("post_id = ?", postId).Update("count", gorm.Expr("count + ?", netVoteCount))
 	return tx.Error
 }
 

@@ -3,10 +3,12 @@ SERVER:
   WRITETIMEOUT: 15
 DATABASE:
   HOST: "database"
+  USER: "admin"
   PORT: 5432
 DBNAME:
   POSTS: "posts"
   USERS: "users"
+  LIKES: "likes"
 REDIS:
   PORT: 6379
   PASSWORD: ""
