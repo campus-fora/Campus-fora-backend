@@ -17,16 +17,17 @@ type UserDetails struct {
 
 type User struct {
 	gorm.Model
-	UserId        string          `json:"user_id"`
-	Email         string          `json:"email"`
-	Password      string          `json:"password"`
-	RoleId        string          `json:"role_id"`
-	ProfilePic    string          `json:"profile_pic"`
-	UserDetails   UserDetails     `gorm:"foreignKey:UserID"`
-	UserQuestions []UserQuestions `gorm:"foreignKey:UserID"` // ID is the foreign key
-	// UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:UserID"`
-	Notifications []Notification `gorm:"foreignKey:UserID"`
-	NotifTokens   []NotifTokens  `gorm:"foreignKey:UserID"`
+	UserId               string                 `json:"user_id"`
+	Email                string                 `json:"email"`
+	Password             string                 `json:"password"`
+	RoleId               string                 `json:"role_id"`
+	ProfilePic           string                 `json:"profile_pic"`
+	UserDetails          UserDetails            `gorm:"foreignKey:UserID"`
+	UserQuestions        []UserQuestions        `gorm:"foreignKey:UserID"` // ID is the foreign key
+	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:UserID"`
+	UserLikedQuestions   []UserLikedQuestions   `gorm:"foreignKey:UserID"`
+	Notifications        []Notification         `gorm:"foreignKey:UserID"`
+	NotifTokens          []NotifTokens          `gorm:"foreignKey:UserID"`
 }
 
 type UserQuestions struct {
@@ -35,11 +36,17 @@ type UserQuestions struct {
 	QuestionId string
 }
 
-// type UserStarredQuestions struct {
-// 	gorm.Model
-// 	UserID     uint
-// 	QuestionId string
-// }
+type UserStarredQuestions struct {
+	gorm.Model
+	UserID     uint
+	QuestionId string
+}
+
+type UserLikedQuestions struct {
+	gorm.Model
+	UserID     uint
+	QuestionId string
+}
 
 type Notification struct {
 	gorm.Model
