@@ -10,13 +10,13 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type thread_as_hmap struct {
-	thread_detail []byte `redis:"thread_detail"`
-	posts         []byte `redis:"posts"`
-	tags          []byte `redis:"tags"`
+type questionAsHmap struct {
+	questionDetail []byte `redis:"question_detail"`
+	answers        []byte `redis:"answers"`
+	tags           []byte `redis:"tags"`
 }
 
-func getAllQuestionDetailsCache(ctx *gin.Context, threads *[]all_thread_response) error {
+func getAllQuestionDetailsCache(ctx *gin.Context, questions *[]allQuestionResponse) error {
 	cursor := uint64(0)
 	size, err := rdb.DBSize(ctx).Result()
 	if err != nil {
@@ -27,22 +27,22 @@ func getAllQuestionDetailsCache(ctx *gin.Context, threads *[]all_thread_response
 	}
 
 	for {
-		keys, nextCursor, err := rdb.Scan(ctx, cursor, "thread:*", 10).Result()
+		keys, nextCursor, err := rdb.Scan(ctx, cursor, "question:*", 10).Result()
 		if err != nil {
 			return err
 		}
 		for _, key := range keys {
-			var thread_detail thread_detail
+			var questionDetail QuestionDetail
 			var tags []Tag
 
-			cmd, err := rdb.HGet(ctx, key, "thread_detail").Bytes()
+			cmd, err := rdb.HGet(ctx, key, "question_detail").Bytes()
 			if err != nil {
 				return err
 			}
 
 			b := bytes.NewReader(cmd)
 
-			if err := gob.NewDecoder(b).Decode(&thread_detail); err != nil && err.Error() != "EOF" {
+			if err := gob.NewDecoder(b).Decode(&questionDetail); err != nil && err.Error() != "EOF" {
 				return err
 			}
 
@@ -57,15 +57,15 @@ func getAllQuestionDetailsCache(ctx *gin.Context, threads *[]all_thread_response
 				return err
 			}
 
-			thread_detail_with_tags := all_thread_response{
-				ID:            thread_detail.ID,
-				CreatedAt:     thread_detail.CreatedAt,
-				Title:         thread_detail.Title,
-				Content:       thread_detail.Content,
-				CreatedByUser: thread_detail.CreatedByUser,
+			question_detail_with_tags := allQuestionResponse{
+				ID:            questionDetail.ID,
+				CreatedAt:     questionDetail.CreatedAt,
+				Title:         questionDetail.Title,
+				Content:       questionDetail.Content,
+				CreatedByUser: questionDetail.CreatedByUser,
 				Tags:          tags,
 			}
-			*threads = append(*threads, thread_detail_with_tags)
+			*questions = append(*questions, question_detail_with_tags)
 		}
 
 		cursor = nextCursor
@@ -77,38 +77,38 @@ func getAllQuestionDetailsCache(ctx *gin.Context, threads *[]all_thread_response
 	return nil
 }
 
-func setQuestionCache(ctx *gin.Context, thread Thread) error {
-	var b_thread_detail, b_Posts, b_Tags bytes.Buffer
+func setQuestionCache(ctx *gin.Context, question Question) error {
+	var bQuestionDetail, bAnswers, bTags bytes.Buffer
 
-	thread_detail := thread_detail{
-		ID:            thread.ID,
-		CreatedAt:     thread.CreatedAt,
-		Title:         thread.Title,
-		Content:       thread.Content,
-		CreatedByUser: thread.CreatedByUser,
+	questionDetail := QuestionDetail{
+		ID:            question.ID,
+		CreatedAt:     question.CreatedAt,
+		Title:         question.Title,
+		Content:       question.Content,
+		CreatedByUser: question.CreatedByUser,
 	}
 
-	err := gob.NewEncoder(&b_thread_detail).Encode(thread_detail)
+	err := gob.NewEncoder(&bQuestionDetail).Encode(questionDetail)
 	if err != nil {
 		fmt.Print("error in cahcing: ", err.Error())
 		return err
 	}
 
-	err = gob.NewEncoder(&b_Posts).Encode(thread.Posts)
+	err = gob.NewEncoder(&bAnswers).Encode(question.Answers)
 	if err != nil {
 		return err
 	}
 
-	err = gob.NewEncoder(&b_thread_detail).Encode(thread.Tags)
+	err = gob.NewEncoder(&bQuestionDetail).Encode(question.Tags)
 	if err != nil {
 		fmt.Print("error in cahcing: ", err.Error())
 		return err
 	}
 
-	err = rdb.HSet(ctx, "thread:"+strconv.FormatUint(uint64(thread.ID), 10),
-		"thread_detail", b_thread_detail.Bytes(),
-		"posts", b_Posts.Bytes(),
-		"tags", b_Tags.Bytes()).Err()
+	err = rdb.HSet(ctx, "question:"+strconv.FormatUint(uint64(question.ID), 10),
+		"question_detail", bQuestionDetail.Bytes(),
+		"answers", bAnswers.Bytes(),
+		"tags", bTags.Bytes()).Err()
 	if err != nil {
 		fmt.Print("error in cahcing: ", err.Error())
 	}
@@ -116,35 +116,35 @@ func setQuestionCache(ctx *gin.Context, thread Thread) error {
 	return err
 }
 
-func setQuestionDetailsCache(ctx *gin.Context, thread Thread) error {
-	var b_thread_detail, b_Tags bytes.Buffer
+func setQuestionDetailsCache(ctx *gin.Context, question Question) error {
+	var b_question_detail, b_Tags bytes.Buffer
 
-	thread_detail := thread_detail{
-		ID:            thread.ID,
-		CreatedAt:     thread.CreatedAt,
-		Title:         thread.Title,
-		Content:       thread.Content,
-		CreatedByUser: thread.CreatedByUser,
+	question_detail := QuestionDetail{
+		ID:            question.ID,
+		CreatedAt:     question.CreatedAt,
+		Title:         question.Title,
+		Content:       question.Content,
+		CreatedByUser: question.CreatedByUser,
 	}
 
-	err := gob.NewEncoder(&b_thread_detail).Encode(thread_detail)
+	err := gob.NewEncoder(&b_question_detail).Encode(question_detail)
 	if err != nil {
 		return err
 	}
 
-	err = gob.NewEncoder(&b_thread_detail).Encode(thread.Tags)
+	err = gob.NewEncoder(&b_question_detail).Encode(question.Tags)
 	if err != nil {
 		return err
 	}
 
-	return rdb.HSet(ctx, "thread:"+strconv.FormatUint(uint64(thread.ID), 10),
-		"thread_detail", b_thread_detail.Bytes(),
+	return rdb.HSet(ctx, "question:"+strconv.FormatUint(uint64(question.ID), 10),
+		"question_detail", b_question_detail.Bytes(),
 		"tags", b_Tags.Bytes()).Err()
 }
 
-func setAllQuestionDetailCache(ctx *gin.Context, threads []Thread) error {
-	for _, thread := range threads {
-		err := setQuestionDetailsCache(ctx, thread)
+func setAllQuestionDetailCache(ctx *gin.Context, questions []Question) error {
+	for _, question := range questions {
+		err := setQuestionDetailsCache(ctx, question)
 		if err != nil {
 			fmt.Println(err)
 		}

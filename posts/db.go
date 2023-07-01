@@ -5,17 +5,22 @@ import (
 	// "gorm.io/gorm"
 )
 
-func fetchAllThreadDetails(ctx *gin.Context, thread_detail *[]Thread) error {
-	tx := db.WithContext(ctx).Model(&Thread{}).Select("id, created_at, title, content, created_by_user").Preload("Tags").Find(thread_detail)
+func fetchAllQuestionDetails(ctx *gin.Context, questionDetail *[]Question) error {
+	tx := db.WithContext(ctx).Model(&Question{}).Select("id, created_at, title, content, created_by_user").Preload("Tags").Find(questionDetail)
 	return tx.Error
 }
 
-func createThread(ctx *gin.Context, thread *Thread) error {
-	tx := db.WithContext(ctx).Create(thread)
+func createQuestion(ctx *gin.Context, question *Question) error {
+	tx := db.WithContext(ctx).Create(question)
 	return tx.Error
 }
 
-func FetchAllPostsWithId(ctx *gin.Context, postIds []uint, posts *[]Thread) error {
-	tx := db.WithContext(ctx).Model(&Post{}).Where("id IN ?", postIds).Find(&[]Post{})
+func FetchAllQuestionsWithID(ctx *gin.Context, questionIds []uint, questions *[]Question) error {
+	tx := db.WithContext(ctx).Model(&Question{}).Where("id IN ?", questionIds).Find(questions)
+	return tx.Error
+}
+
+func FetchAllAnswersWithId(ctx *gin.Context, answerIds []uint, answers *[]Question) error {
+	tx := db.WithContext(ctx).Model(&Answer{}).Where("id IN ?", answerIds).Find(&[]Answer{})
 	return tx.Error
 }

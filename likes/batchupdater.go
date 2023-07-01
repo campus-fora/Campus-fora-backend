@@ -21,30 +21,37 @@ type LikeCountBuffer struct {
 	hmap map[uint] LikeCountBufferValues
 }
 
-func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(message amqp.Delivery) {
-	var voteRequest newVoteRequest
-	err := gob.NewDecoder(bytes.NewReader(message.Body)).Decode(&voteRequest)
-	if err != nil {
-		log.Println("Error in decoding vote request struct")
-		return
-	}
-	oldVoteStatus, err:= fetchLikeStatusWithoutContext(uint(voteRequest.PostID), uint(voteRequest.UserID))
-	if err!=nil {
-		log.Println("Error in fetching like status")
-		return
-	}
+func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(voteRequest newVoteRequest, db *gorm.DB, prevVote int) {
+	// var voteRequest newVoteRequest
+	// err := gob.NewDecoder(bytes.NewReader(message.Body)).Decode(&voteRequest)
+	// if err != nil {
+	// 	log.Println("Error in decoding vote request struct")
+	// 	return
+	// }
+	// oldVoteStatus, err:= fetchLikeStatusWithoutContext(db,uint(voteRequest.PostID), uint(voteRequest.UserID))
+	// if err!=nil {
+	// 	log.Println("Error in fetching like status")
+	// 	return
+	// }
 
-	// oldVoteStatus := 0
-	if (oldVoteStatus == voteRequest.VoteType) {
+	if (prevVote == voteRequest.VoteType) {
 		return;	
 	}
 	likeCountBuffer.mu.Lock()
 	defer likeCountBuffer.mu.Unlock()
 	if(voteRequest.VoteType == Like) {
-		likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt + 1, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + oldVoteStatus}
+		likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt + 1, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + prevVote}
 	}
 	if(voteRequest.VoteType == Dislike) {
-		likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt - oldVoteStatus, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + 1}
+		likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt - prevVote, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + 1}
+	}
+	if(voteRequest.VoteType == NotVoted) {
+		if(prevVote == Like) {
+			likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt - 1, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + prevVote}
+		}
+		if(prevVote == Dislike) {
+			likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt + prevVote, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt - 1}
+		}
 	}
 }
 
@@ -129,7 +136,7 @@ func batchUpdater() {
 	for {
 		select {
 		case message := <-msgs:
-			likeCountBuffer.updatelikeCountBuffer(message)
+			// likeCountBuffer.updatelikeCountBuffer(message,batchUpdaterDB)
 			buffer = append(buffer, message)
 		case <-timer.C:
 			processBufferedMessages(buffer, &likeCountBuffer, batchUpdaterDB)

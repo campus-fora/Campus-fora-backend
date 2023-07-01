@@ -34,14 +34,10 @@ func fetchLikeStatus(ctx *gin.Context, postId uint, userId uint) (int, error) {
 	tx := db.WithContext(ctx).Model(&UserLike{}).Where("post_id = ? AND user_id = ?", postId, userId).First(&userLike)
 	return userLike.VoteType, tx.Error
 }
-func fetchLikeStatusWithoutContext(postId uint, userId uint) (int, error ){
-	// log.Print("inside fetchLikeStatusWithoutContext", postId, userId)
-	// var userLike *UserLike
+func fetchLikeStatusWithoutContext(db *gorm.DB,postId uint, userId uint) (int, error ){
 	userLike := &UserLike{}
 	tx := db.WithContext(context.Background()).Model(&UserLike{}).Where("post_id = ? AND user_id = ?", postId, userId).First(userLike)
-	// log.Println(" debugging ---> ")
 	return userLike.VoteType, tx.Error
-	// return 0, nil
 }
 func fetchLikedPostsByUser(ctx *gin.Context, userId uint, allPostIds *[]uint) error {
 	tx := db.WithContext(ctx).

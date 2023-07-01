@@ -1,5 +1,9 @@
 package likes
 
+import (
+	"time"
+)
+
 const (
 	Like     = 1
 	Dislike  = -1
@@ -7,25 +11,27 @@ const (
 )
 
 type UserLike struct {
-	UserID   uint `gorm:"column:user_id;index:user_like_idx;primaryKey"`
-	PostID   uint `gorm:"column:post_id;index:user_like_idx;primaryKey"`
-	VoteType int  `gorm:"vote_type"`
+	UserID        uint `gorm:"index:user_like_idx;primaryKey" json:"user_id"`
+	PostID        uint `gorm:"index:user_like_idx;primaryKey" json:"post_id"`
+	VoteType      int  `json:"vote_type"`
+	LatestReqTime time.Time
 }
 
 type TotalLikeCount struct {
-	PostID       uint `gorm:"column:post_id";"index:total_like_idx";"primaryKey"`
-	LikeCount    int  `gorm:"like_count"`
-	DislikeCount int  `gorm:dislike_count`
+	PostID       uint `gorm:"index:total_like_idx;primaryKey"`
+	LikeCount    int
+	DislikeCount int
 }
 
 type DailyLikeCount struct {
 	PostID       uint `gorm:"post_id;primaryKey"`
-	LikeCount    int  `gorm:"like_count"`
-	DislikeCount int  `gorm:dislike_count`
+	LikeCount    int
+	DislikeCount int
 }
 
 type newVoteRequest struct {
-	PostID   uint `json:"post_id"`
-	UserID   uint `json:"user_id"`
-	VoteType int  `json:"vote_type"`
+	PostID        uint `json:"post_id"`
+	UserID        uint `json:"user_id"`
+	VoteType      int  `json:"vote_type"`
+	LatestReqTime time.Time
 }

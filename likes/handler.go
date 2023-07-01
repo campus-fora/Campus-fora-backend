@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/campus-fora/middleware"
 	"github.com/campus-fora/posts"
@@ -36,9 +37,10 @@ func updateUserLikeStatusHandler(ctx *gin.Context) {
 	}
 
 	voteCh <- newVoteRequest{
-		PostID:   uint(pid),
-		UserID:   userId,
-		VoteType: vote.Value,
+		PostID:        uint(pid),
+		UserID:        userId,
+		VoteType:      vote.Value,
+		LatestReqTime: time.Now(),
 	}
 	log.Println("Vote vlaue ->", vote.Value)
 	ctx.JSON(http.StatusOK, gin.H{"message": "Vote request recieved"})
@@ -72,10 +74,9 @@ func getLikedQuestionsByUser(ctx *gin.Context) {
 		return
 	}
 
-	var LiekdQuestions []posts.Thread
+	var LiekdQuestions []posts.Question
 
-	err = posts.FetchAllPostsWithId(ctx, allQuestionIds, &LiekdQuestions)
-	// check if a post is a question or not
+	err = posts.FetchAllQuestionsWithID(ctx, allQuestionIds, &LiekdQuestions)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

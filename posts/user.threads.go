@@ -9,7 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type all_thread_response struct {
+type allQuestionResponse struct {
 	ID            uint      `json:"id"`
 	CreatedAt     time.Time `json:"created_at"`
 	Title         string    `json:"title"`
@@ -18,50 +18,48 @@ type all_thread_response struct {
 	Tags          []Tag     `json:"tags"`
 }
 
-func getAllThreadsDetail(ctx *gin.Context) {
-	var threads []all_thread_response
+func getAllQuestionsDetailHandler(ctx *gin.Context) {
+	var questions []allQuestionResponse
 
-	err := getAllQuestionDetailsCache(ctx, &threads)
+	err := getAllQuestionDetailsCache(ctx, &questions)
 	if err == nil {
 		fmt.Print("cache hit")
-		ctx.JSON(http.StatusOK, threads)
+		ctx.JSON(http.StatusOK, questions)
 		return
 	}
 	if err == redis.Nil {
-		var threads []Thread
-		err = fetchAllThreadDetails(ctx, &threads)
+		var questions []Question
+		err = fetchAllQuestionDetails(ctx, &questions)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		go setAllQuestionDetailCache(ctx, threads)
-		fmt.Println("get request completed")
-		ctx.JSON(http.StatusOK, threads)
+		go setAllQuestionDetailCache(ctx, questions)
+		ctx.JSON(http.StatusOK, questions)
 		return
 	}
 	fmt.Print(err.Error())
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 }
 
-func postThread(ctx *gin.Context) {
-	var thread Thread
+func createNewQuestionHandler(ctx *gin.Context) {
+	var question Question
 
-	if err := ctx.ShouldBindJSON(&thread); err != nil {
+	if err := ctx.ShouldBindJSON(&question); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		print(err.Error())
 		return
 	}
 
-	if err := createThread(ctx, &thread); err != nil {
+	if err := createQuestion(ctx, &question); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	go setQuestionCache(ctx, thread)
-	fmt.Println("post request completed")
+	go setQuestionCache(ctx, question)
 
-	ctx.JSON(http.StatusOK, thread)
+	ctx.JSON(http.StatusOK, question)
 }
 
 func getPosts(ctx *gin.Context) {
@@ -74,4 +72,17 @@ func getPosts(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, response)
+}
+
+// func getQuestionHandler(ctx *gin.Context) {
+// 	qid := 
+// }
+
+func createAnswerHandler(ctx *gin.Context) {
+	var answer Answer;
+
+	if err := ctx.ShouldBindJSON(&answer); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return;
+	}
 }

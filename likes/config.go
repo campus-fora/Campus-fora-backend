@@ -100,5 +100,5 @@ func init() {
 
 	go publisher()
 	go updater()
-	go batchUpdater()
+	// go batchUpdater()
 }

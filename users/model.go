@@ -24,7 +24,6 @@ type User struct {
 	ProfilePic           string                 `json:"profile_pic"`
 	UserDetails          UserDetails            `gorm:"foreignKey:UserID"`
 	UserQuestions        []UserQuestions        `gorm:"foreignKey:UserID"` // ID is the foreign key
-	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:UserID"`
 	UserLikedQuestions   []UserLikedQuestions   `gorm:"foreignKey:UserID"`
 	Notifications        []Notification         `gorm:"foreignKey:UserID"`
 	NotifTokens          []NotifTokens          `gorm:"foreignKey:UserID"`
@@ -33,19 +32,15 @@ type User struct {
 type UserQuestions struct {
 	gorm.Model
 	UserID     uint
-	QuestionId string
+	QuestionId uint
 }
 
-type UserStarredQuestions struct {
-	gorm.Model
-	UserID     uint
-	QuestionId string
-}
+
 
 type UserLikedQuestions struct {
 	gorm.Model
 	UserID     uint
-	QuestionId string
+	QuestionId uint
 }
 
 type Notification struct {
