@@ -3,6 +3,7 @@ package posts
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -14,8 +15,10 @@ type Topic struct {
 }
 
 type Question struct {
-	gorm.Model
-	UUID                 string                 `json:"uuid"`
+	CreatedAt time.Time
+    UpdatedAt time.Time
+    DeletedAt gorm.DeletedAt `gorm:"index"`
+	UUID                 uuid.UUID                `json:"uuid" gorm:"primaryKey"`
 	TopicID              uint                   `json:"topic_id"`
 	Title                string                 `json:"title"`
 	Content              string                 `json:"content"`
@@ -27,29 +30,34 @@ type Question struct {
 
 type Tag struct {
 	gorm.Model
+	TopicID uint `json:"topic_id"`
 	Name string `json:"name"`
 }
 
 type Answer struct {
-	gorm.Model
-	UUID          string    `json:"uuid"`
-	ParentID      uint      `json:"parent_id"`
+	CreatedAt 	  time.Time
+    UpdatedAt     time.Time
+    DeletedAt     gorm.DeletedAt `gorm:"index"`
+	UUID          uuid.UUID    `json:"uuid" gorm:"primaryKey"`
+	ParentID      uuid.UUID      `json:"parent_id"`
 	Content       string    `json:"content"`
 	IsAnswer      bool      `json:"is_answer"`
 	CreatedByUser string    `json:"created_by_user"`
-	Comments      []Comment `gorm:"foreignKey:ParentID"`
+	Comments      []Comment `gorm:"foreignKey:ParentID" json:"comments"`
 }
 
 type Comment struct {
-	gorm.Model
-	UUID          string `json:"uuid"`
-	ParentID      uint   `json:"parent_id"`
+	CreatedAt time.Time
+    UpdatedAt time.Time
+    DeletedAt gorm.DeletedAt `gorm:"index"`
+	UUID          uuid.UUID `json:"uuid" gorm:"primaryKey"`
+	ParentID      uuid.UUID   `json:"parent_id"`
 	Content       string `json:"content"`
 	CreatedByUser string `json:"created_by_user"`
 }
 
 type QuestionDetail struct {
-	ID            uint      `json:"id"`
+	UUID          uuid.UUID      `json:"uuid"`
 	CreatedAt     time.Time `json:"created_at"`
 	Title         string    `json:"title"`
 	Content       string    `json:"content"`

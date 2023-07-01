@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -58,7 +57,7 @@ func getAllQuestionDetailsCache(ctx *gin.Context, questions *[]allQuestionRespon
 			}
 
 			question_detail_with_tags := allQuestionResponse{
-				ID:            questionDetail.ID,
+				UUID:          questionDetail.UUID,
 				CreatedAt:     questionDetail.CreatedAt,
 				Title:         questionDetail.Title,
 				Content:       questionDetail.Content,
@@ -77,11 +76,11 @@ func getAllQuestionDetailsCache(ctx *gin.Context, questions *[]allQuestionRespon
 	return nil
 }
 
-func setQuestionCache(ctx *gin.Context, question Question) error {
+func setQuestionCache(ctx *gin.Context, question *Question) error {
 	var bQuestionDetail, bAnswers, bTags bytes.Buffer
 
 	questionDetail := QuestionDetail{
-		ID:            question.ID,
+		UUID:          question.UUID,
 		CreatedAt:     question.CreatedAt,
 		Title:         question.Title,
 		Content:       question.Content,
@@ -105,7 +104,7 @@ func setQuestionCache(ctx *gin.Context, question Question) error {
 		return err
 	}
 
-	err = rdb.HSet(ctx, "question:"+strconv.FormatUint(uint64(question.ID), 10),
+	err = rdb.HSet(ctx, "question:"+question.UUID.String(),
 		"question_detail", bQuestionDetail.Bytes(),
 		"answers", bAnswers.Bytes(),
 		"tags", bTags.Bytes()).Err()
@@ -120,7 +119,7 @@ func setQuestionDetailsCache(ctx *gin.Context, question Question) error {
 	var b_question_detail, b_Tags bytes.Buffer
 
 	question_detail := QuestionDetail{
-		ID:            question.ID,
+		UUID:            question.UUID,
 		CreatedAt:     question.CreatedAt,
 		Title:         question.Title,
 		Content:       question.Content,
@@ -137,7 +136,7 @@ func setQuestionDetailsCache(ctx *gin.Context, question Question) error {
 		return err
 	}
 
-	return rdb.HSet(ctx, "question:"+strconv.FormatUint(uint64(question.ID), 10),
+	return rdb.HSet(ctx, "question:"+question.UUID.String(),
 		"question_detail", b_question_detail.Bytes(),
 		"tags", b_Tags.Bytes()).Err()
 }
