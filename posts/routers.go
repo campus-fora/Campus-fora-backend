@@ -16,10 +16,13 @@ func InitRouters(router *gin.Engine) {
 		posts.PUT("/question/:qid", updateQuestionHandler)
 		posts.PUT("/question/:qid/tags",updateQuestionTagsHandler)
 		posts.DELETE("/question/:qid", deleteQuestionHandler)
+
+		posts.GET("/answer/:aid", getAnswerByUUIDHandler)
 		posts.POST("/answer", createAnswerHandler)
 		posts.PUT("/answer/:aid", updateAnswerHandler)
 		posts.DELETE("/answer/:aid", deleteAnswerHandler)
-
+		posts.PUT("/answer/correctAnswer/:aid", updateIsAnswerCorrectHandler)
+		
 		posts.POST("/comment", createCommentHandler)
 		posts.PUT("/comment/:cid", updateCommentHandler)
 		posts.DELETE("/comment/:cid", deleteCommentHandler)

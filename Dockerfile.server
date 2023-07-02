@@ -15,7 +15,7 @@ COPY . .
 RUN rm /etc/nginx/sites-enabled/default
 RUN ln -s  /go/src/campus-fora-backend/nginx.conf /etc/nginx/sites-enabled/default
 
-EXPOSE 80
+EXPOSE 8080
 
 ENV GO111MODULE=on
 ENV PATH="${PATH}:/go/bin"

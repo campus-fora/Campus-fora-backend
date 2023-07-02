@@ -15,14 +15,14 @@ type Topic struct {
 }
 
 type Question struct {
-	CreatedAt time.Time
-    UpdatedAt time.Time
-    DeletedAt gorm.DeletedAt `gorm:"index"`
-	UUID                 uuid.UUID                `json:"uuid" gorm:"primaryKey"`
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
+	DeletedAt            gorm.DeletedAt         `gorm:"index"`
+	UUID                 uuid.UUID              `json:"uuid" gorm:"primaryKey"`
 	TopicID              uint                   `json:"topic_id"`
 	Title                string                 `json:"title"`
 	Content              string                 `json:"content"`
-	CreatedByUser        string                 `json:"created_by_user"`
+	CreatedByUser        uint                   `json:"created_by_user"`
 	Answers              []Answer               `gorm:"foreignKey:ParentID" json:"answers"`
 	Tags                 []Tag                  `gorm:"many2many:question_tags;" json:"tags"`
 	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:UserID"`
@@ -30,38 +30,38 @@ type Question struct {
 
 type Tag struct {
 	gorm.Model
-	TopicID uint `json:"topic_id"`
-	Name string `json:"name"`
+	TopicID uint   `json:"topic_id"`
+	Name    string `json:"name"`
 }
 
 type Answer struct {
-	CreatedAt 	  time.Time
-    UpdatedAt     time.Time
-    DeletedAt     gorm.DeletedAt `gorm:"index"`
-	UUID          uuid.UUID    `json:"uuid" gorm:"primaryKey"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     gorm.DeletedAt `gorm:"index"`
+	UUID          uuid.UUID      `json:"uuid" gorm:"primaryKey"`
 	ParentID      uuid.UUID      `json:"parent_id"`
-	Content       string    `json:"content"`
-	IsAnswer      bool      `json:"is_answer"`
-	CreatedByUser string    `json:"created_by_user"`
-	Comments      []Comment `gorm:"foreignKey:ParentID" json:"comments"`
+	Content       string         `json:"content"`
+	IsAnswer      bool           `json:"is_answer"`
+	CreatedByUser uint           `json:"created_by_user"`
+	Comments      []Comment      `gorm:"foreignKey:ParentID" json:"comments"`
 }
 
 type Comment struct {
-	CreatedAt time.Time
-    UpdatedAt time.Time
-    DeletedAt gorm.DeletedAt `gorm:"index"`
-	UUID          uuid.UUID `json:"uuid" gorm:"primaryKey"`
-	ParentID      uuid.UUID   `json:"parent_id"`
-	Content       string `json:"content"`
-	CreatedByUser string `json:"created_by_user"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     gorm.DeletedAt `gorm:"index"`
+	UUID          uuid.UUID      `json:"uuid" gorm:"primaryKey"`
+	ParentID      uuid.UUID      `json:"parent_id"`
+	Content       string         `json:"content"`
+	CreatedByUser uint         `json:"created_by_user"`
 }
 
 type QuestionDetail struct {
-	UUID          uuid.UUID      `json:"uuid"`
+	UUID          uuid.UUID `json:"uuid"`
 	CreatedAt     time.Time `json:"created_at"`
 	Title         string    `json:"title"`
 	Content       string    `json:"content"`
-	CreatedByUser string    `json:"created_by_user"`
+	CreatedByUser uint      `json:"created_by_user"`
 }
 
 type UserStarredQuestions struct {

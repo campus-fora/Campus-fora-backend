@@ -37,7 +37,7 @@ services:
       - redis
       - MQ
     ports:
-      - "80:80"
+      - "8080:8080"
     volumes:
       - ./:/go/src/campus-fora-backend
     privileged: true

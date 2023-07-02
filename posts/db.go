@@ -2,6 +2,7 @@ package posts
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	// "gorm.io/gorm"
 )
 
@@ -16,8 +17,7 @@ func fetchQuestionByUUID(ctx *gin.Context, question *Question) error {
 }
 
 func createQuestion(ctx *gin.Context, question *Question) error {
-	tx := db.WithContext(ctx).Model(&Question{}).Create(question)
-	return tx.Error
+	return db.WithContext(ctx).Model(&Question{}).FirstOrCreate(question).Error
 }
 
 func fetchQuestionsByTag(ctx *gin.Context, tags []string, questions *[]Question) error {
@@ -30,16 +30,16 @@ func fetchQuestionsByTag(ctx *gin.Context, tags []string, questions *[]Question)
     Find(&questions)
 	return tx.Error
 }
-func updateQuestion(ctx *gin.Context, qid string ,question *Question) error {
-	tx := db.WithContext(ctx).Model(&Question{}).Where("uuid = ?", qid).Updates(question)
+func updateQuestion(ctx *gin.Context, qid uuid.UUID ,question *Question) error {
+	tx := db.WithContext(ctx).Model(&Question{}).Where("uuid = ?", qid).Updates(Question{Title: question.Title, Content: question.Content})
 	return tx.Error
 }
 
-func updateQuestionTags(ctx *gin.Context, qid string, tags *[]Tag) error {
+func updateQuestionTags(ctx *gin.Context, qid uuid.UUID, tags *[]Tag) error {
 	return db.WithContext(ctx).Model(&Question{}).Where("uuid = ?", qid).Association("Tags").Replace(tags)
 }
 
-func deleteQuestionByUUID(ctx *gin.Context, qid string) error {
+func deleteQuestionByUUID(ctx *gin.Context, qid uuid.UUID) error {
 	tx := db.WithContext(ctx).Model(&Question{}).Where("uuid = ?", qid).Delete(&Question{})
 	return tx.Error
 }
@@ -49,22 +49,27 @@ func FetchAllQuestionsWithID(ctx *gin.Context, questionIds []uint, questions *[]
 	return tx.Error
 }
 
-func FetchAllAnswersWithId(ctx *gin.Context, answerIds []uint, answers *[]Question) error {
+func fetchAnswerByUUID(ctx *gin.Context, aid uuid.UUID, answer *Answer) error {
+	tx := db.WithContext(ctx).Model(&Answer{}).Preload("Comments").First(answer, aid)
+	return tx.Error
+}
+
+func FetchAllAnswersWithUUID(ctx *gin.Context, answerIds []uint, answers *[]Question) error {
 	tx := db.WithContext(ctx).Model(&Answer{}).Where("uuid IN ?", answerIds).Find(&[]Answer{})
 	return tx.Error
 }
 
-func createAnswer(ctx *gin.Context, qid string, answer *Answer) error {
+func createAnswer(ctx *gin.Context, answer *Answer, userId uint) error {
 	tx := db.WithContext(ctx).Model(&Answer{}).Create(answer)
 	return tx.Error
 }
 
-func updateAnswerByUUID(ctx *gin.Context, aid string, answer *Answer) error {
+func updateAnswerByUUID(ctx *gin.Context, aid uuid.UUID, answer *Answer) error {
 	tx := db.WithContext(ctx).Model(&Answer{}).Where("uuid = ?", aid).Updates(answer)
 	return tx.Error
 }
 
-func deleteAnswerByUUID(ctx *gin.Context, aid string) error {
+func deleteAnswerByUUID(ctx *gin.Context, aid uuid.UUID) error {
 	tx := db.WithContext(ctx).Model(&Answer{}).Where("uuid = ?", aid).Delete(&Answer{})
 	return tx.Error
 }
@@ -74,12 +79,12 @@ func createComment(ctx *gin.Context, comment *Comment) error {
 	return tx.Error
 }
 
-func updateCommentByUUID(ctx *gin.Context, cid string, comment *Comment) error {
+func updateCommentByUUID(ctx *gin.Context, cid uuid.UUID, comment *Comment) error {
 	tx := db.WithContext(ctx).Model(&Comment{}).Where("uuid = ?", cid).Updates(comment)
 	return tx.Error
 }
 
-func deleteCommentByUUID(ctx *gin.Context, cid string) error {
+func deleteCommentByUUID(ctx *gin.Context, cid uuid.UUID) error {
 	tx := db.WithContext(ctx).Model(&Comment{}).Where("uuid = ?", cid).Delete(&Comment{})
 	return tx.Error
 }
