@@ -8,7 +8,10 @@ require (
 	golang.org/x/sync v0.2.0
 )
 
-require github.com/rabbitmq/amqp091-go v1.8.1 // indirect
+require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/rabbitmq/amqp091-go v1.8.1 // indirect
+)
 
 require (
 	cloud.google.com/go v0.110.2 // indirect
