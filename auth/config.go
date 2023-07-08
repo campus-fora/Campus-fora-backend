@@ -11,7 +11,7 @@ import (
 var DB *gorm.DB
 
 func initDB() {
-	host := "127.0.0.1"
+	host := viper.GetString("DATABASE.HOST")
 	port := viper.GetString("DATABASE.PORT")
 	password := "postgres"
 	dbName := "postgres"

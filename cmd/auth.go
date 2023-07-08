@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -32,28 +31,19 @@ func init() {
 	UserController = auth.NewUserController(auth.DB)
 	UserRouteController = auth.NewRouteUserController(UserController)
 
-	server = gin.Default()
 }
 
 func authServer(mail_channel chan mail.Mail) *http.Server {
 	READTIMEOUT := time.Duration(viper.GetInt("SERVER.READTIMEOUT")) * time.Second
 	WRITETIMEOUT := time.Duration(viper.GetInt("SERVER.WRITETIMEOUT")) * time.Second
-	PORT := viper.GetString("PORT.LIKES")
+	PORT := viper.GetString("PORT.AUTH")
 	engine := gin.Default()
 	engine.Use(middleware.CORS())
-	engine.Use(gin.Recovery())
-	engine.Use(gin.Logger())
 
-	router := engine.Group("/api")
-	router.GET("/healthchecker", func(ctx *gin.Context) {
-		message := "Auth Service Working..."
-		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": message})
-	})
 	go mail.Service(mail_channel)
 
-	AuthRouteController.AuthRoute(mail_channel, router)
-	UserRouteController.UserRoute(router)
-	log.Fatal(server.Run(":" + "8000"))
+	AuthRouteController.AuthRoute(mail_channel, engine)
+	UserRouteController.UserRoute(engine)
 	server := &http.Server{
 		Addr:         ":" + PORT,
 		Handler:      engine,
