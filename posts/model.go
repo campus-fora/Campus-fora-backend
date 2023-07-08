@@ -23,6 +23,7 @@ type Question struct {
 	Title                string                 `json:"title"`
 	Content              string                 `json:"content"`
 	CreatedByUser        uint                   `json:"created_by_user"`
+	CreatedByUserName    string                 `json:"created_by_user_name"`
 	Answers              []Answer               `gorm:"foreignKey:ParentID" json:"answers"`
 	Tags                 []Tag                  `gorm:"many2many:question_tags;" json:"tags"`
 	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:UserID"`
@@ -35,25 +36,27 @@ type Tag struct {
 }
 
 type Answer struct {
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	DeletedAt     gorm.DeletedAt `gorm:"index"`
-	UUID          uuid.UUID      `json:"uuid" gorm:"primaryKey"`
-	ParentID      uuid.UUID      `json:"parent_id"`
-	Content       string         `json:"content"`
-	IsAnswer      bool           `json:"is_answer"`
-	CreatedByUser uint           `json:"created_by_user"`
-	Comments      []Comment      `gorm:"foreignKey:ParentID" json:"comments"`
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	DeletedAt         gorm.DeletedAt `gorm:"index"`
+	UUID              uuid.UUID      `json:"uuid" gorm:"primaryKey"`
+	ParentID          uuid.UUID      `json:"parent_id"`
+	Content           string         `json:"content"`
+	IsAnswer          bool           `json:"is_answer"`
+	CreatedByUser     uint           `json:"created_by_user"`
+	CreatedByUserName string         `json:"created_by_user_name"`
+	Comments          []Comment      `gorm:"foreignKey:ParentID" json:"comments"`
 }
 
 type Comment struct {
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	DeletedAt     gorm.DeletedAt `gorm:"index"`
-	UUID          uuid.UUID      `json:"uuid" gorm:"primaryKey"`
-	ParentID      uuid.UUID      `json:"parent_id"`
-	Content       string         `json:"content"`
-	CreatedByUser uint         `json:"created_by_user"`
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	DeletedAt         gorm.DeletedAt `gorm:"index"`
+	UUID              uuid.UUID      `json:"uuid" gorm:"primaryKey"`
+	ParentID          uuid.UUID      `json:"parent_id"`
+	Content           string         `json:"content"`
+	CreatedByUser     uint           `json:"created_by_user"`
+	CreatedByUserName string         `json:"created_by_user_name"`
 }
 
 type QuestionDetail struct {

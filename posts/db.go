@@ -6,8 +6,15 @@ import (
 	// "gorm.io/gorm"
 )
 
-func fetchAllQuestionDetails(ctx *gin.Context, questionDetail *[]Question) error {
-	tx := db.WithContext(ctx).Model(&Question{}).Select("uuid, created_at, title, content, created_by_user").Preload("Tags").Find(questionDetail)
+func fetchAllQuestionDetails(ctx *gin.Context, tid uint, questionDetail *[]questionDetailResponse) error {
+	// tx := db.WithContext(ctx).Model(&Question{}).Select("uuid, created_at, title, content, created_by_user").Preload("Tags").Find(questionDetail)
+	// return tx.Error
+	tx := db.WithContext(ctx).Model(&Question{}).Preload("Tags").Where("questions.topic_id = ?", tid).Joins("JOIN answers ON questions.uuid = answers.parent_id").Where("answers.deleted_at IS NULL").Select("questions.uuid, questions.created_at,questions.updated_at, questions.title, questions.content, questions.created_by_user, questions.created_by_user_name, string_agg(distinct answers.uuid::text, ',') as answer_ids").Group("questions.uuid").Find(questionDetail)
+	return tx.Error
+}
+
+func fetchQuestionWithoutAnswer(ctx *gin.Context, qid uuid.UUID, question *Question) error {
+	tx := db.WithContext(ctx).Model(&Question{}).Preload("Tags").Where("questions.uuid = ?", qid).First(question)
 	return tx.Error
 }
 
@@ -22,15 +29,15 @@ func createQuestion(ctx *gin.Context, question *Question) error {
 
 func fetchQuestionsByTag(ctx *gin.Context, tags []string, questions *[]Question) error {
 	tx := db.Preload("Tags").
-    Joins("JOIN question_tags ON questions.uuid = question_tags.question_uuid").
-    Joins("JOIN tags ON tags.id = question_tags.tag_id").
-    Where("tags.name IN (?)", tags).
-    Group("questions.uuid").
-    Having("COUNT(DISTINCT tags.id) = ?", len(tags)).
-    Find(&questions)
+		Joins("JOIN question_tags ON questions.uuid = question_tags.question_uuid").
+		Joins("JOIN tags ON tags.id = question_tags.tag_id").
+		Where("tags.name IN (?)", tags).
+		Group("questions.uuid").
+		Having("COUNT(DISTINCT tags.id) = ?", len(tags)).
+		Find(&questions)
 	return tx.Error
 }
-func updateQuestion(ctx *gin.Context, qid uuid.UUID ,question *Question) error {
+func updateQuestion(ctx *gin.Context, qid uuid.UUID, question *Question) error {
 	tx := db.WithContext(ctx).Model(&Question{}).Where("uuid = ?", qid).Updates(Question{Title: question.Title, Content: question.Content})
 	return tx.Error
 }
@@ -51,6 +58,11 @@ func FetchAllQuestionsWithID(ctx *gin.Context, questionIds []uint, questions *[]
 
 func fetchAnswerByUUID(ctx *gin.Context, aid uuid.UUID, answer *Answer) error {
 	tx := db.WithContext(ctx).Model(&Answer{}).Preload("Comments").First(answer, aid)
+	return tx.Error
+}
+
+func fetchAnswersWithUUIDs(ctx *gin.Context, aid []uuid.UUID, answers *[]Answer) error {
+	tx := db.WithContext(ctx).Model(&Answer{}).Preload("Comments").Where("UUID in ?", aid).Find(answers)
 	return tx.Error
 }
 
@@ -88,6 +100,3 @@ func deleteCommentByUUID(ctx *gin.Context, cid uuid.UUID) error {
 	tx := db.WithContext(ctx).Model(&Comment{}).Where("uuid = ?", cid).Delete(&Comment{})
 	return tx.Error
 }
-
-
-

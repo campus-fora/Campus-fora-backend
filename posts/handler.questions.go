@@ -1,12 +1,12 @@
 package posts
 
 import (
-	"log"
 	"net/http"
+	"strconv"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 )
 
 type allQuestionResponse struct {
@@ -18,29 +18,52 @@ type allQuestionResponse struct {
 	Tags          []Tag     `json:"tags"`
 }
 
+type questionDetailResponse struct {
+	UUID              uuid.UUID `json:"uuid"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+	Title             string    `json:"title"`
+	Content           string    `json:"content"`
+	CreatedByUser     uint      `json:"created_by_user"`
+	CreatedByUserName string    `json:"created_by_user_name"`
+	AnswerIds         string    `json:"answer_ids"`
+	Tags              []Tag     `json:"tags" gorm:"many2many:question_tags;"`
+}
+
 func getAllQuestionsDetailHandler(ctx *gin.Context) {
-	var questions []allQuestionResponse
+	var questions []questionDetailResponse
 
-	err := getAllQuestionDetailsCache(ctx, &questions)
-	if err == nil {
-		log.Print("cache hit")
-		ctx.JSON(http.StatusOK, questions)
+	// err := getAllQuestionDetailsCache(ctx, &questions)
+	// if err == nil {
+	// 	log.Print("cache hit")
+	// 	ctx.JSON(http.StatusOK, questions)
+	// 	return
+	// }
+	// if err == redis.Nil {
+	// 	var questions []Question
+	// 	err = fetchAllQuestionDetails(ctx, &questions)
+	// 	if err != nil {
+	// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 		return
+	// 	}
+
+	// 	// go setAllQuestionDetailCache(ctx, questions)
+	// 	ctx.JSON(http.StatusOK, questions)
+	// 	return
+	// }
+	// ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	tid, err := strconv.ParseUint(ctx.Param("tid"), 10, 32)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err == redis.Nil {
-		var questions []Question
-		err = fetchAllQuestionDetails(ctx, &questions)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		// go setAllQuestionDetailCache(ctx, questions)
-		ctx.JSON(http.StatusOK, questions)
+	err = fetchAllQuestionDetails(ctx, uint(tid), &questions)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	log.Print(err.Error())
-	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	ctx.JSON(http.StatusOK, questions)
 }
 
 func createNewQuestionHandler(ctx *gin.Context) {
@@ -59,6 +82,21 @@ func createNewQuestionHandler(ctx *gin.Context) {
 
 	// go setQuestionCache(ctx, question)
 
+	ctx.JSON(http.StatusOK, question)
+}
+
+func getQuestionWithoutAnswersHandler(ctx *gin.Context) {
+	var question Question
+	qid, err := uuid.Parse(ctx.Param("qid"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err = fetchQuestionWithoutAnswer(ctx, qid, &question)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	ctx.JSON(http.StatusOK, question)
 }
 

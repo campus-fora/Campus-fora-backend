@@ -7,8 +7,8 @@ import (
 func InitRouters(router *gin.Engine) {
 	posts := router.Group("api/posts")
 	{
-		posts.GET("/questions", getAllQuestionsDetailHandler)
-		posts.GET("/question/:qid", getQuestionHandler)
+		posts.GET("/:tid/questions", getAllQuestionsDetailHandler)
+		posts.GET("/question/:qid", getQuestionWithoutAnswersHandler)
 		// posts.GET("/question/paginated", getLimitedQuestionsHandler)
 		// posts.GET("/question/tags", getQuestionsByTagsHandler)
 
@@ -17,7 +17,7 @@ func InitRouters(router *gin.Engine) {
 		posts.PUT("/question/:qid/tags",updateQuestionTagsHandler)
 		posts.DELETE("/question/:qid", deleteQuestionHandler)
 
-		posts.GET("/answer/:aid", getAnswerByUUIDHandler)
+		posts.GET("/answer", getAllAnswersWithUUIDsHandler)
 		posts.POST("/answer", createAnswerHandler)
 		posts.PUT("/answer/:aid", updateAnswerHandler)
 		posts.DELETE("/answer/:aid", deleteAnswerHandler)

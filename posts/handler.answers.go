@@ -22,6 +22,25 @@ func getAnswerByUUIDHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, answer)
 }
 
+func getAllAnswersWithUUIDsHandler(ctx *gin.Context) {
+	var answers []Answer
+	var answerIds []uuid.UUID
+	// aid, err := uuid.Parse(ctx.Param("aid"))
+	for _, aid := range ctx.QueryArray("aid") {
+		aid, err := uuid.Parse(aid)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		answerIds = append(answerIds, aid)
+	}
+	if err := fetchAnswersWithUUIDs(ctx, answerIds, &answers); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, answers)
+}
+
 func createAnswerHandler(ctx *gin.Context) {
 	var answer *Answer
 	if err := ctx.ShouldBindJSON(&answer); err != nil {
