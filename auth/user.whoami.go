@@ -20,7 +20,7 @@ func NewUserController(DB *gorm.DB) UserController {
 
 func whoamiHandler(ctx *gin.Context) {
 	middleware.Authenticator()(ctx)
-	user_id := middleware.GetUserID(ctx)
+	user_id := ""
 	fmt.Print("yo_user")
 	if user_id == "" {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Null user id"})

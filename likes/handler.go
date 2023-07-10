@@ -3,12 +3,12 @@ package likes
 import (
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/campus-fora/middleware"
 	"github.com/campus-fora/posts"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Vote struct {
@@ -20,7 +20,7 @@ func updateUserLikeStatusHandler(ctx *gin.Context) {
 
 	userId := middleware.GetUserId(ctx) // fetch userId from middleware
 
-	pid, err := strconv.ParseUint(ctx.Param("pid"), 10, 32)
+	pid, err := uuid.Parse(ctx.Param("pid"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -37,7 +37,7 @@ func updateUserLikeStatusHandler(ctx *gin.Context) {
 	}
 
 	voteCh <- newVoteRequest{
-		PostID:        uint(pid),
+		PostID:        pid,
 		UserID:        userId,
 		VoteType:      vote.Value,
 		LatestReqTime: time.Now(),
@@ -47,21 +47,19 @@ func updateUserLikeStatusHandler(ctx *gin.Context) {
 }
 
 func getLikesCountHandler(ctx *gin.Context) {
-
-	pid, err := strconv.ParseUint(ctx.Param("pid"), 10, 32)
+	pid, err := uuid.Parse(ctx.Param("pid"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post id"})
 	}
 
-	totalLikes, err := fetchLikesCountForPost(ctx, uint(pid))
+	totalCount, err := fetchLikesCountForPost(ctx, pid)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch vote count"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, totalLikes)
-
+	ctx.JSON(http.StatusOK, totalCount)
 }
 
 func getLikedQuestionsByUser(ctx *gin.Context) {
@@ -89,12 +87,12 @@ func getLikedQuestionsByUser(ctx *gin.Context) {
 func getUserLikeStatusHandler(ctx *gin.Context) {
 	// get user id from context
 	var userId = 0 // hardcoding
-	postId, err := strconv.ParseUint(ctx.Param("pid"), 10, 32)
+	postId, err := uuid.Parse(ctx.Param("pid"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post id"})
 		return
 	}
-	voteStatus, err := fetchLikeStatus(ctx, uint(postId), uint(userId))
+	voteStatus, err := fetchLikeStatus(ctx, postId, uint(userId))
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

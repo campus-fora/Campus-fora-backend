@@ -50,7 +50,7 @@ func initDB() {
 
 	db = database
 
-	err = db.AutoMigrate(&Topic{} , &Question{}, &Tag{}, &Answer{}, &Comment{})
+	err = db.AutoMigrate(&Topic{} , &Question{}, &Tag{}, &Answer{}, &Comment{}, &UserStarredQuestions{})
 	if err != nil {
 		fmt.Print("Error in automigrating posts DB:\n", err)
 		panic(err)

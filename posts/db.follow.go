@@ -2,8 +2,10 @@ package posts
 
 import (
 	"errors"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -17,29 +19,42 @@ import (
 
 // func fetchUserStarredQuestions()
 
-func fetchUserStarQuestionStatus(ctx *gin.Context, userId uint, qid uint) (bool, error) {
+func fetchFollowingStatus(ctx *gin.Context, userId uint, qid uuid.UUID) (bool, error) {
 
 	tx := db.WithContext(ctx).Model(&UserStarredQuestions{}).Where("user_id = ? and question_id = ?", userId, qid).First(&UserStarredQuestions{})
 	starred := false
 	if tx.RowsAffected > 0 {
 		starred = true
 	}
-	return starred, tx.Error
+	if(errors.Is(tx.Error, gorm.ErrRecordNotFound)){
+		return starred, nil
+	}
+	if tx.Error != nil {
+		return starred, tx.Error
+	}
+	return starred, nil
 }
 
-func toggleOrCreateStarQuestion(ctx *gin.Context, userId uint, qid uint) error {
-	var starredQuestion *UserStarredQuestions
-	tx := db.WithContext(ctx).Model(&UserStarredQuestions{}).Unscoped().Where("user_id = ? and question_id = ?", userId, qid).First(starredQuestion)
+func toggleOrCreateStarQuestion(ctx *gin.Context, userId uint, qid uuid.UUID) (error, bool) {
+	var starredQuestion UserStarredQuestions
+	var status = false
+	tx := db.WithContext(ctx).Model(&UserStarredQuestions{}).Unscoped().Where("user_id = ? and question_id = ?", userId, qid).First(&starredQuestion)
 	if(errors.Is(tx.Error, gorm.ErrRecordNotFound)){
+		log.Print("record not found")
 		tx = db.WithContext(ctx).Model(&UserStarredQuestions{}).Create(&UserStarredQuestions{UserID: userId, QuestionId: qid})
-		return tx.Error
+		status = true
+		return tx.Error, status
 	}
+	log.Print("record found")
 	if (starredQuestion.DeletedAt.Valid) {
+		log.Print("record found and deleted")
 		tx = tx.Update("deleted_at", gorm.Expr("NULL"))
+		status = true
 	} else {
+		log.Print("record found and not deleted")
 		tx = tx.Delete(starredQuestion)
 	}
-	return tx.Error
+	return tx.Error, status
 }
 
 func fetchAllStarredQuestionsByUser(ctx *gin.Context, userId uint) ([]UserStarredQuestions, error) {

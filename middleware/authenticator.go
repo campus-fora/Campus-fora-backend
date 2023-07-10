@@ -58,9 +58,9 @@ func Authenticator() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
-func GetUserID(ctx *gin.Context) string {
-	return ctx.GetString("user_id")
-}
+// func GetUserID(ctx *gin.Context) string {
+// 	return ctx.GetString("user_id")
+// }
 func GetRoleID(ctx *gin.Context) constants.Role {
 	return constants.Role(ctx.GetInt("role_id"))
 }

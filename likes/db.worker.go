@@ -3,10 +3,11 @@ package likes
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func updateUserLikeStatus(db *gorm.DB, postId uint, userId uint, voteType int, latestReqTime time.Time) (error , int, bool) {
+func updateUserLikeStatus(db *gorm.DB, postId uuid.UUID, userId uint, voteType int, latestReqTime time.Time) (error , int, bool) {
 	userLike := &UserLike{PostID: postId, UserID: userId}
 	tx := db.Model(&UserLike{}).Where("post_id = ? AND user_id = ?", postId, userId).FirstOrCreate(userLike)
 	if(userLike.LatestReqTime.After(latestReqTime)){
