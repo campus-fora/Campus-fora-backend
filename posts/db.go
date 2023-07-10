@@ -1,6 +1,8 @@
 package posts
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	// "gorm.io/gorm"
@@ -25,6 +27,11 @@ func fetchQuestionByUUID(ctx *gin.Context, question *Question) error {
 
 func createQuestion(ctx *gin.Context, question *Question) error {
 	return db.WithContext(ctx).Model(&Question{}).FirstOrCreate(question).Error
+}
+
+func fetchLimitedQuestionByRelevancy(ctx *gin.Context, offset int, pageSize int, questions *[]Question) error {
+	tx := db.WithContext(ctx).Model(&Question{}).Joins("JOIN question_relevancy ON question.uuid = question_relevancy.uuid").Order("relevancy DESC").Offset(offset).Limit(pageSize).Find(&questions)
+	return tx.Error
 }
 
 func fetchQuestionsByTag(ctx *gin.Context, tags []string, questions *[]Question) error {
@@ -99,4 +106,10 @@ func updateCommentByUUID(ctx *gin.Context, cid uuid.UUID, comment *Comment) erro
 func deleteCommentByUUID(ctx *gin.Context, cid uuid.UUID) error {
 	tx := db.WithContext(ctx).Model(&Comment{}).Where("uuid = ?", cid).Delete(&Comment{})
 	return tx.Error
+}
+func QuestionExists(ques_id uint64) bool {
+	var ques Question
+	result := db.First(&ques, "ID = ?", fmt.Sprint(ques_id))
+	return result.Error == nil
+
 }

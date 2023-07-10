@@ -13,9 +13,9 @@ var DB *gorm.DB
 func initDB() {
 	host := viper.GetString("DATABASE.HOST")
 	port := viper.GetString("DATABASE.PORT")
-	password := "postgres"
-	dbName := "postgres"
-	user := "postgres"
+	password := "authkaadmin"
+	dbName := viper.GetString("DBNAME.AUTH")
+	user := "authadmin"
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata", host, user, password, dbName, port)
 	fmt.Print("\nyohoho" + dsn + "\n")
 

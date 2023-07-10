@@ -11,7 +11,7 @@ func InitRouters(router *gin.Engine) {
 		posts.GET("/question/:qid", getQuestionWithoutAnswersHandler)
 		// posts.GET("/question/paginated", getLimitedQuestionsHandler)
 		// posts.GET("/question/tags", getQuestionsByTagsHandler)
-
+		posts.GET("/question/relevancy/:pageSize/:page", getLimitedQuestionByRelevancy)
 		posts.POST("/question", createNewQuestionHandler)
 		posts.PUT("/question/:qid", updateQuestionHandler)
 		posts.PUT("/question/:qid/tags",updateQuestionTagsHandler)

@@ -22,19 +22,19 @@ func (rc *AuthRouteController) AuthRoute(mail_channel chan mail.Mail, rg *gin.En
 	router.GET("/refresh", rc.authController.RefreshAccessToken)
 	router.GET("/logout", middleware.Authenticator(), rc.authController.LogoutUser)
 	router.GET("/verifyemail/:verificationCode", rc.authController.VerificationLinkHandler(mail_channel))
-
-}
-
-type UserRouteController struct {
-	userController UserController
-}
-
-func NewRouteUserController(userController UserController) UserRouteController {
-	return UserRouteController{userController}
-}
-
-func (uc *UserRouteController) UserRoute(rg *gin.Engine) {
-
-	router := rg.Group("api/users")
 	router.GET("/whoami", middleware.Authenticator(), whoamiHandler)
+
 }
+
+// type UserRouteController struct {
+// 	userController UserController
+// }
+
+// func NewRouteUserController(userController UserController) UserRouteController {
+// 	return UserRouteController{userController}
+// }
+
+// func (uc *UserRouteController) UserRoute(rg *gin.Engine) {
+
+// 	router := rg.Group("api/users")
+// }

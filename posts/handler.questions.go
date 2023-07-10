@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/campus-fora/stats"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -52,17 +53,22 @@ func getAllQuestionsDetailHandler(ctx *gin.Context) {
 	// 	return
 	// }
 	// ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-
 	tid, err := strconv.ParseUint(ctx.Param("tid"), 10, 32)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if QuestionExists(tid) {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Question does not exists"})
+
+	}
+
 	err = fetchAllQuestionDetails(ctx, uint(tid), &questions)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	ctx.JSON(http.StatusOK, questions)
 }
 
@@ -97,6 +103,8 @@ func getQuestionWithoutAnswersHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	stats.UpdateViewHandler(ctx, qid)
+
 	ctx.JSON(http.StatusOK, question)
 }
 
@@ -178,4 +186,29 @@ func deleteQuestionHandler(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Question deleted successfully"})
+}
+
+func getLimitedQuestionByRelevancy(ctx *gin.Context) {
+	page, err := strconv.ParseUint(ctx.Param("page"), 10, 32)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pageSize, err := strconv.ParseUint(ctx.Param("pageSize"), 10, 32)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	offset := (page - 1) * pageSize
+
+	var Questions []Question
+	err = fetchLimitedQuestionByRelevancy(ctx, int(offset), int(pageSize), &Questions)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, Questions)
+
 }
