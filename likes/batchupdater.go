@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -18,7 +19,7 @@ type LikeCountBufferValues struct{
 }
 type LikeCountBuffer struct {
 	mu   sync.Mutex
-	hmap map[uint] LikeCountBufferValues
+	hmap map[uuid.UUID] LikeCountBufferValues
 }
 
 func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(voteRequest newVoteRequest, db *gorm.DB, prevVote int) {
@@ -123,7 +124,7 @@ func batchUpdater() {
 	timer := time.NewTicker(processingInterval)
 
 	var likeCountBuffer LikeCountBuffer
-	likeCountBuffer.hmap = make(map[uint]LikeCountBufferValues)
+	likeCountBuffer.hmap = make(map[uuid.UUID]LikeCountBufferValues)
 	var buffer []amqp.Delivery
 
 	msgs, err := openBatchUpdaterQueue()
@@ -160,7 +161,7 @@ func processBufferedMessages(buffer []amqp.Delivery, likeCountBuffer *LikeCountB
 			log.Printf("Error in updating likes count for pid: %d \n", pid)
 		}
 	}
-	likeCountBuffer.hmap = make(map[uint]LikeCountBufferValues)
+	likeCountBuffer.hmap = make(map[uuid.UUID]LikeCountBufferValues)
 }
 
 func acknowledgeMessages(buffer []amqp.Delivery) {

@@ -9,10 +9,11 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func updateBatchLikeCount(db *gorm.DB, postId uint, newVoteCount LikeCountBufferValues) error {
+func updateBatchLikeCount(db *gorm.DB, postId uuid.UUID, newVoteCount LikeCountBufferValues) error {
 
 	tx := db.Model(&DailyLikeCount{}).Where("post_id = ?", postId).FirstOrCreate(&DailyLikeCount{PostID: postId}).
     Updates(map[string]interface{}{
@@ -23,15 +24,23 @@ func updateBatchLikeCount(db *gorm.DB, postId uint, newVoteCount LikeCountBuffer
 	return tx.Error
 }
 
-func fetchLikesCountForPost(ctx *gin.Context, postId uint) (uint, error) {
-	var totalLikes uint
-	tx := db.WithContext(ctx).Model(&DailyLikeCount{}).Joins("daily_like_counts.post_id = total_like_counts.post_id").Select("daily_like_counts.count + total_like_counts.count").Find(&totalLikes)
-	return totalLikes, tx.Error
+func fetchLikesCountForPost(ctx *gin.Context, postId uuid.UUID) (DailyLikeCount, error) {
+	var dailyCount DailyLikeCount
+	var totalCount TotalLikeCount
+	tx := db.WithContext(ctx).Model(&DailyLikeCount{}).FirstOrCreate(&dailyCount, DailyLikeCount{PostID: postId})
+	if(tx.Error != nil){
+		return DailyLikeCount{}, tx.Error
+	}
+	tx = db.WithContext(ctx).Model(&TotalLikeCount{}).FirstOrCreate(&totalCount, TotalLikeCount{PostID: postId})
+	if(tx.Error != nil){
+		return DailyLikeCount{}, tx.Error
+	}
+	return DailyLikeCount{PostID: postId, LikeCount: dailyCount.LikeCount + totalCount.LikeCount, DislikeCount: dailyCount.DislikeCount + totalCount.DislikeCount}, tx.Error
 }
 
-func fetchLikeStatus(ctx *gin.Context, postId uint, userId uint) (int, error) {
+func fetchLikeStatus(ctx *gin.Context, postId uuid.UUID, userId uint) (int, error) {
 	var userLike UserLike
-	tx := db.WithContext(ctx).Model(&UserLike{}).Where("post_id = ? AND user_id = ?", postId, userId).First(&userLike)
+	tx := db.WithContext(ctx).Model(&UserLike{}).FirstOrCreate(&userLike,&UserLike{UserID: userId, PostID: postId})
 	return userLike.VoteType, tx.Error
 }
 func fetchLikeStatusWithoutContext(db *gorm.DB,postId uint, userId uint) (int, error ){

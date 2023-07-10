@@ -26,7 +26,7 @@ type Question struct {
 	CreatedByUserName    string                 `json:"created_by_user_name"`
 	Answers              []Answer               `gorm:"foreignKey:ParentID" json:"answers"`
 	Tags                 []Tag                  `gorm:"many2many:question_tags;" json:"tags"`
-	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:UserID"`
+	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:QuestionId"`
 }
 
 type Tag struct {
@@ -69,6 +69,6 @@ type QuestionDetail struct {
 
 type UserStarredQuestions struct {
 	UserID     uint           `gorm:"primaryKey"`
-	QuestionId uint           `gorm:"primaryKey"`
+	QuestionId uuid.UUID      `gorm:"primaryKey"`
 	DeletedAt  gorm.DeletedAt `gorm:"index"`
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/viper"
 )
@@ -66,7 +67,7 @@ func updater() {
 	updaterDB, err := openDBConn()
 
 	var likeCountBuffer LikeCountBuffer
-	likeCountBuffer.hmap = make(map[uint]LikeCountBufferValues)
+	likeCountBuffer.hmap = make(map[uuid.UUID]LikeCountBufferValues)
 	var buffer []amqp.Delivery
 
 	processingInterval := time.Duration(viper.GetInt("MQ.PROCESSING_INTERVAL")) * time.Second

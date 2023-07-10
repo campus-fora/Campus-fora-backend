@@ -41,12 +41,12 @@ func openDBConn() (*gorm.DB, error) {
 }
 
 func initDB() {
-	db, err := openDBConn()
+	database, err := openDBConn()
 	if err != nil {
 		log.Print("Error in connecting to likes DB:\n", err)
 		panic(err)
 	}
-
+	db = database
 	err = db.AutoMigrate(&UserLike{}, &TotalLikeCount{}, &DailyLikeCount{})
 	if err != nil {
 		log.Print("Error in automigrating likes DB:\n", err)
@@ -54,7 +54,6 @@ func initDB() {
 	}
 
 	log.Println("Successfully connected to likes DB")
-	log.Println(db)
 }
 
 func openMQChannels(conn *amqp.Connection) error {

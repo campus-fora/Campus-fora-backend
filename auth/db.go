@@ -72,10 +72,10 @@ func updateUserRole(ctx *gin.Context) {
 
 	middleware.Authenticator()(ctx)
 	middleware.EnsureAuthority()(ctx)
-	if middleware.GetUserID(ctx) == "" {
+	if "" == "" {
 		return
 	}
-	var user_id = middleware.GetUserID(ctx)
+	var user_id = ""
 
 	userRole, _, err := getRoleAndStatus(ctx, user_id)
 

@@ -7,6 +7,11 @@ import (
 func InitRouters(router *gin.Engine) {
 	posts := router.Group("api/posts")
 	{
+		posts.GET("/topic", getAllTopicsHandler)
+		posts.POST("/topic", createTopicHandler)
+		posts.PUT("/topic/:tid", updateTopicHandler)
+		posts.DELETE("/topic/:tid", deleteTopicHandler)
+
 		posts.GET("/:tid/questions", getAllQuestionsDetailHandler)
 		posts.GET("/question/:qid", getQuestionWithoutAnswersHandler)
 		// posts.GET("/question/paginated", getLimitedQuestionsHandler)

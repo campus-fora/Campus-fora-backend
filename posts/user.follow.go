@@ -1,29 +1,30 @@
 package posts
 
 import (
-	// "net/http"
+	"log"
+	"net/http"
 
 	"github.com/campus-fora/middleware"
-	"net/http"
-	"strconv"
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 )
 
 func updateQuestionFollowingStatus(ctx *gin.Context) {
-	qid, err := strconv.ParseUint(ctx.Param("qid"), 10 ,32)
+	qid, err := uuid.Parse(ctx.Param("qid"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Print("error parsing uuid", err)
 		return
 	}
 
 	userId := middleware.GetUserId(ctx)
-	err = toggleOrCreateStarQuestion(ctx, userId, uint(qid))
+	err, status := toggleOrCreateStarQuestion(ctx, userId, qid)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "successfully updated question following status"})
+	ctx.JSON(http.StatusOK, status)
 }
 
 func getAllStarredQuestions(ctx *gin.Context) {
@@ -39,15 +40,15 @@ func getAllStarredQuestions(ctx *gin.Context) {
 
 func getQuestionFollowingStatus(ctx *gin.Context) {
 	userId := middleware.GetUserId(ctx)
-	qid, err := strconv.ParseUint(ctx.Param("qid"), 10 ,32)
+	qid, err := uuid.Parse(ctx.Param("qid"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	starred, err := fetchUserStarQuestionStatus(ctx, userId, uint(qid))
+	starred, err := fetchFollowingStatus(ctx, userId, qid)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"status": starred})
+	ctx.JSON(http.StatusOK, starred)
 }
