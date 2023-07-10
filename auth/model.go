@@ -8,7 +8,7 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"user_id"`
+	ID        uuid.UUID      `gorm:"type:uuid;primary_key" json:"user_id"`
 	Name      string         `gorm:"type:varchar(255);not null" json:"name"`
 	Email     string         `gorm:"uniqueIndex;not null" json:"email"`
 	Password  string         `gorm:"not null" json:"password"`
@@ -42,7 +42,7 @@ type UserResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 type TemporaryUser struct {
-	ID               uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"user_id"`
+	ID               uuid.UUID `gorm:"type:uuid;primary_key" json:"user_id"`
 	Name             string    `gorm:"type:varchar(255);not null" json:"name"`
 	Email            string    `gorm:";not null" json:"email"`
 	Password         string    `gorm:"not null" json:"password"`
