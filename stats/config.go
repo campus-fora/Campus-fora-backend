@@ -26,7 +26,7 @@ func initDB() {
 		panic(err)
 	}
 
-	err = DB.AutoMigrate(&User{}, &Ques{})
+	err = DB.AutoMigrate(&User1{}, &Ques1{}, &UserQues{})
 	if err != nil {
 		fmt.Print("Error in automigrating Analytics DB:\n", err)
 		panic(err)

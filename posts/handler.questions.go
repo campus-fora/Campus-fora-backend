@@ -103,8 +103,11 @@ func getQuestionWithoutAnswersHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	stats.UpdateViewHandler(ctx, qid)
+	err = stats.UpdateViewHandler(ctx, qid)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 
+	}
 	ctx.JSON(http.StatusOK, question)
 }
 

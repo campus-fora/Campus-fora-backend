@@ -25,8 +25,8 @@ var (
 
 func init() {
 
- 	AuthController = auth.NewAuthController(auth.DB)
- 	AuthRouteController = auth.NewAuthRouteController(AuthController)
+	AuthController = auth.NewAuthController(auth.DB)
+	AuthRouteController = auth.NewAuthRouteController(AuthController)
 
 	//UserController = auth.NewUserController(auth.DB)
 	//UserRouteController = auth.NewRouteUserController(UserController)

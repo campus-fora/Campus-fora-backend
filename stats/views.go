@@ -12,51 +12,71 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateViewHandler(ctx *gin.Context, qid uuid.UUID) {
+func UpdateViewHandler(ctx *gin.Context, qid uuid.UUID) error {
+
 	middleware.Authenticator()(ctx)
 	user_id := middleware.GetUserID(ctx)
 	fmt.Print("yo_user")
 	if user_id == "" {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Null user id"})
-		return
+		return nil
 	}
 	if !auth.UserExists(user_id) {
-		return
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Authorization Provided"})
+
+		return nil
 	}
-	updateViewList(qid, user_id)
+
+	err := updateViewList(qid, user_id)
+	return err
 	//updateViewCount(tid, user_id)
 
 }
-func updateViewList(qid uuid.UUID, user_id string) {
-	var ques Ques
+func updateViewList(qid uuid.UUID, user_id string) error {
+	var ques1 Ques1
+	var user User1
 
-	// DB.FirstOrCreate(&ques, Ques{QuesID: qid})
-	// if DB.NewRecord(ques) {
-	// 	ques.Users = []User{
-	// 		{UserID: user_id},
-	// 			}
-	// 	DB.Create(&ques)
-	// } else {
-
-	// 	ques.Users = append(ques.Users, User{UserID: user_id})
-	// 	DB.Save(&ques)
-	// }
-	// if DB.Model(&ques).Where("ques_id ?", qid).Updates(&user).RowsAffected == 0 {
-	// 	db.Create(&user)
-	// }
-	if err := DB.Model(&ques).Where("ques_id = ?", qid).Update("user", append(ques.Users, User{UserID: user_id})).Error; err != nil {
+	err := DB.Where("ques_id = ?", fmt.Sprint(qid.String())).First(&ques1).Error
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			ques.QuesID = qid
-			ques.Users = []User{
-				{UserID: user_id},
-			}
-			result := DB.Create(&ques)
+			ques1.QuesID = qid.String()
+			result := DB.Create(&ques1)
 			if result.Error != nil {
-				log.Print("Error updating viewlist")
-				return
+				log.Print("Error updating stats Queslist")
+				//return result.Error
 			}
-			fmt.Print("Viewlist updated")
+			fmt.Print("Stats Queslist updated")
 		}
 	}
+
+	err = DB.Where("user_id = ?", user_id).First(&user).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			user.UserID = user_id
+			result := DB.Create(&user)
+			if result.Error != nil {
+				log.Print("Error updating stats Userlist")
+			}
+			fmt.Print("Stats Userlist updated")
+		}
+	}
+	var userQues UserQues
+
+	err = DB.Where("user_id = ? AND ques_id = ?", user_id, qid.String()).First(&userQues).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			userQues.UserID = user_id
+			userQues.QuesID = qid.String()
+			result := DB.Create(&userQues)
+			if result.Error != nil {
+				log.Print("Error updating stats Userlist Relation")
+				//return result.Error
+			}
+			fmt.Print("Stats Userlist updated Relation")
+		}
+	}
+
+	return err
 
 }

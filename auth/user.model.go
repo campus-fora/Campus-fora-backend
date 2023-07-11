@@ -4,11 +4,12 @@ import (
 	"time"
 
 	"github.com/campus-fora/constants"
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	ID        uuid.UUID      `gorm:"type:uuid;primary_key" json:"user_id"`
+	gorm.Model
+	ID        uint           `gorm:"primary_key;autoIncrement:true" json:"user_id"`
 	Name      string         `gorm:"type:varchar(255);not null" json:"name"`
 	Email     string         `gorm:"uniqueIndex;not null" json:"email"`
 	Password  string         `gorm:"not null" json:"password"`
@@ -16,8 +17,8 @@ type User struct {
 	Blocked   bool           `gorm:"default:false" json:"blocked" `
 	LastLogin uint           `gorm:"index;autoUpdateTime:milli" json:"last_login"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	//CreatedAt time.Time
+	//UpdatedAt time.Time
 }
 
 type SignUpRequest struct {
@@ -33,7 +34,7 @@ type SignInInput struct {
 }
 
 type UserResponse struct {
-	ID    uuid.UUID      `json:"id,omitempty"`
+	ID    uint           `json:"id,omitempty"`
 	Name  string         `json:"name,omitempty"`
 	Email string         `json:"email,omitempty"`
 	Role  constants.Role `json:"role,omitempty"`
@@ -42,10 +43,10 @@ type UserResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 type TemporaryUser struct {
-	ID               uuid.UUID `gorm:"type:uuid;primary_key" json:"user_id"`
-	Name             string    `gorm:"type:varchar(255);not null" json:"name"`
-	Email            string    `gorm:";not null" json:"email"`
-	Password         string    `gorm:"not null" json:"password"`
-	Verificationcode string    `gorm:"uniqueIndex;not null" json:"verificationcode"`
-	Expires          uint      `gorm:"column:expires"`
+	ID               uint   `gorm:"primary_key;autoIncrement:true" json:"user_id"`
+	Name             string `gorm:"type:varchar(255);not null" json:"name"`
+	Email            string `gorm:";not null" json:"email"`
+	Password         string `gorm:"not null" json:"password"`
+	Verificationcode string `gorm:"uniqueIndex;not null" json:"verificationcode"`
+	Expires          uint   `gorm:"column:expires"`
 }
