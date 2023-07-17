@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	//"fmt"
 	"net/http"
 	"strings"
 
@@ -9,8 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	//"time"
-	//"github.com/google/uuid"
 )
 
 func GetUserId(ctx *gin.Context) uint { //dummy function
@@ -58,9 +55,9 @@ func Authenticator() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
-// func GetUserID(ctx *gin.Context) string {
-// 	return ctx.GetString("user_id")
-// }
+func GetUserID(ctx *gin.Context) string {
+	return ctx.GetString("user_id")
+}
 func GetRoleID(ctx *gin.Context) constants.Role {
 	return constants.Role(ctx.GetInt("role_id"))
 }

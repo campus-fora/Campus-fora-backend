@@ -18,15 +18,11 @@ func (ac *AuthController) VerificationLinkHandler(mail_channel chan mail.Mail) g
 		switch tx.Error {
 		case nil:
 			ac.DB.WithContext(ctx).Delete(&verifyuser)
-			now := time.Now()
 			newUser := User{
 				Name:     verifyuser.Name,
 				Email:    strings.ToLower(verifyuser.Email),
 				Password: verifyuser.Password,
 				Role:     1,
-
-				CreatedAt: now,
-				UpdatedAt: now,
 			}
 			result := ac.DB.Create(&newUser)
 
