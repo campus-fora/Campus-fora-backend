@@ -7,8 +7,11 @@ import (
 	"github.com/campus-fora/middleware"
 
 	"github.com/campus-fora/constants"
+	"github.com/campus-fora/users"
 	"github.com/gin-gonic/gin"
 )
+
+var DB = users.Db
 
 type UpdateRoleRequest struct {
 	UserID    string         `json:"user_id" binding:"required"`

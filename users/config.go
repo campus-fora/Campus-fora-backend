@@ -2,12 +2,13 @@ package users
 
 import (
 	"log"
+
 	_ "github.com/campus-fora/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+var Db *gorm.DB
 
 func initDB() {
 	host := "database"
@@ -26,9 +27,9 @@ func initDB() {
 		panic(err)
 	}
 
-	db = database
+	Db = database
 
-	err = db.AutoMigrate(&User{}, &UserDetails{}, &UserQuestions{}, &NotifTokens{}, &Notification{})
+	err = Db.AutoMigrate(&User{}, &UserDetails{}, &TemporaryUser{}, &UserQuestions{}, &NotifTokens{}, &Notification{})
 	if err != nil {
 		log.Fatal("Error in automigrating users DB:\n", err)
 		panic(err)
