@@ -11,6 +11,7 @@ func InitRouters(router *gin.Engine) {
 		posts.POST("/topic", createTopicHandler)
 		posts.PUT("/topic/:tid", updateTopicHandler)
 		posts.DELETE("/topic/:tid", deleteTopicHandler)
+		posts.GET("/topic/:tid/tags", getAllTopicTagsHandler)
 
 		posts.GET("/:tid/questions", getAllQuestionsDetailHandler)
 		posts.GET("/question/:qid", getQuestionWithoutAnswersHandler)

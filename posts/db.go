@@ -26,6 +26,11 @@ func deleteTopic(ctx *gin.Context, tid uint) error {
 	return tx.Error
 }
 
+func fetchAllTopicTags(ctx *gin.Context, tid uint, tags *[]Tag) error {
+	tx := db.WithContext(ctx).Model(&Tag{}).Where("topic_id = ?", tid).Find(tags)
+	return tx.Error
+}
+
 func fetchAllQuestionDetails(ctx *gin.Context, tid uint, questionDetail *[]questionDetailResponse) error {
 	// tx := db.WithContext(ctx).Model(&Question{}).Select("uuid, created_at, title, content, created_by_user").Preload("Tags").Find(questionDetail)
 	// return tx.Error

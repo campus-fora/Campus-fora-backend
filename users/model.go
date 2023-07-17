@@ -35,8 +35,6 @@ type UserQuestions struct {
 	QuestionId uint
 }
 
-
-
 type UserLikedQuestions struct {
 	gorm.Model
 	UserID     uint

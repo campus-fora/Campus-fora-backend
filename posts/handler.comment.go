@@ -4,22 +4,34 @@ import (
 	"net/http"
 
 	"github.com/campus-fora/middleware"
+	"github.com/campus-fora/users"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
+type NewCommentReq struct {
+	ParentID          uuid.UUID      `json:"parentID"`
+	Content           string         `json:"content"`
+}
+
 func createCommentHandler(ctx *gin.Context) {
-	var comment Comment
-	if err := ctx.ShouldBindJSON(&comment); err != nil {
+	var commentReq NewCommentReq
+	if err := ctx.ShouldBindJSON(&commentReq); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	userId := middleware.GetUserId(ctx)
-	comment = Comment{
+	err, userName := users.GetUserNameByID(ctx, userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	comment := Comment{
 		UUID:          uuid.New(),
-		ParentID:      comment.ParentID,
-		Content:       comment.Content,
+		ParentID:      commentReq.ParentID,
+		Content:       commentReq.Content,
 		CreatedByUser: userId,
+		CreatedByUserName: userName,
 	}
 
 	if err := createComment(ctx, &comment); err != nil {

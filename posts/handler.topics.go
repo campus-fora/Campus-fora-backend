@@ -62,3 +62,18 @@ func deleteTopicHandler(ctx *gin.Context){
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfully deleted topic"})
 }
+
+func getAllTopicTagsHandler(ctx *gin.Context){
+	tid, err := strconv.ParseUint(ctx.Param("tid"), 10, 32)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var tags []Tag
+	err = fetchAllTopicTags(ctx, uint(tid), &tags)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, tags)
+}

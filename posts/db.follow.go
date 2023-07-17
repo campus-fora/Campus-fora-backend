@@ -21,7 +21,7 @@ import (
 
 func fetchFollowingStatus(ctx *gin.Context, userId uint, qid uuid.UUID) (bool, error) {
 
-	tx := db.WithContext(ctx).Model(&UserStarredQuestions{}).Where("user_id = ? and question_id = ?", userId, qid).First(&UserStarredQuestions{})
+	tx := db.WithContext(ctx).Model(&UserStarredQuestions{}).FirstOrCreate(&UserStarredQuestions{UserID: userId, QuestionId: qid})
 	starred := false
 	if tx.RowsAffected > 0 {
 		starred = true

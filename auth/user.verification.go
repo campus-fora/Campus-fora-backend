@@ -48,6 +48,5 @@ func (ac *AuthController) VerificationLinkHandler(mail_channel chan mail.Mail) g
 
 			return
 		}
-
 	}
 }

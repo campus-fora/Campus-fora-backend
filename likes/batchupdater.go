@@ -48,10 +48,10 @@ func (likeCountBuffer *LikeCountBuffer) updatelikeCountBuffer(voteRequest newVot
 	}
 	if(voteRequest.VoteType == NotVoted) {
 		if(prevVote == Like) {
-			likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt - 1, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt + prevVote}
+			likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt - 1, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt}
 		}
 		if(prevVote == Dislike) {
-			likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt + prevVote, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt - 1}
+			likeCountBuffer.hmap[voteRequest.PostID] = LikeCountBufferValues{likeCnt: likeCountBuffer.hmap[voteRequest.PostID].likeCnt, dislikeCnt: likeCountBuffer.hmap[voteRequest.PostID].dislikeCnt - 1}
 		}
 	}
 }
