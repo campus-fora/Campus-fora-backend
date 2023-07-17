@@ -9,6 +9,8 @@ DBNAME:
   POSTS: "posts"
   USERS: "users"
   LIKES: "likes"
+  AUTH: "auth"
+  STATS: "stats"
 REDIS:
   PORT: 6379
   PASSWORD: ""

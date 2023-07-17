@@ -29,12 +29,15 @@ type Question struct {
 	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:QuestionId"`
 }
 
+type QuestionRelevancy struct {
+	QuestionID uuid.UUID `json: "uuid" gorm:"primaryKey"`
+	Relevancy  int       `json: "relevancy"`
+}
 type Tag struct {
 	gorm.Model
 	TopicID uint   `json:"topic_id"`
 	Name    string `json:"name"`
 }
-
 type Answer struct {
 	CreatedAt         time.Time
 	UpdatedAt         time.Time

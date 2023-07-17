@@ -70,7 +70,6 @@ func updateViewList(qid uuid.UUID, user_id string) error {
 			result := DB.Create(&userQues)
 			if result.Error != nil {
 				log.Print("Error updating stats Userlist Relation")
-				//return result.Error
 			}
 			log.Print("Stats Userlist updated Relation")
 		}

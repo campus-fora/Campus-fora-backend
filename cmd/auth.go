@@ -19,17 +19,17 @@ var (
 	AuthController      auth.AuthController
 	AuthRouteController auth.AuthRouteController
 
-	UserController      auth.UserController
-	UserRouteController auth.UserRouteController
+	//UserController auth.UserController
+	//UserRouteController auth.UserRouteController
 )
 
 func init() {
 
- 	AuthController = auth.NewAuthController(auth.DB)
- 	AuthRouteController = auth.NewAuthRouteController(AuthController)
+	AuthController = auth.NewAuthController(auth.DB)
+	AuthRouteController = auth.NewAuthRouteController(AuthController)
 
-// 	UserController = auth.NewUserController(auth.DB)
-// 	UserRouteController = auth.NewRouteUserController(UserController)
+	//UserController = auth.NewUserController(auth.DB)
+	//UserRouteController = auth.NewRouteUserController(UserController)
 
 }
 
@@ -43,7 +43,7 @@ func authServer(mail_channel chan mail.Mail) *http.Server {
 	go mail.Service(mail_channel)
 
 	AuthRouteController.AuthRoute(mail_channel, engine)
-	UserRouteController.UserRoute(engine)
+	//UserRouteController.UserRoute(engine)
 	server := &http.Server{
 		Addr:         ":" + PORT,
 		Handler:      engine,
