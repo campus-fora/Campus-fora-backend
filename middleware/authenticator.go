@@ -45,7 +45,7 @@ func Authenticator() gin.HandlerFunc {
 
 		user_id, role_id, err := ValidateToken(access_token, AccessTokenPublicKey)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message2": err.Error()})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "reset-token", "message": err.Error()})
 			return
 		}
 

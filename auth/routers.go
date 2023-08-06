@@ -23,7 +23,6 @@ func (rc *AuthRouteController) AuthRoute(mail_channel chan mail.Mail, rg *gin.En
 	router.GET("/logout", middleware.Authenticator(), rc.authController.LogoutUser)
 	router.GET("/verifyemail/:verificationCode", rc.authController.VerificationLinkHandler(mail_channel))
 	router.GET("/whoami", middleware.Authenticator(), whoamiHandler)
-
 }
 
 // type UserRouteController struct {

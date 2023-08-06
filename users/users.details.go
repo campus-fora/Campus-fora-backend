@@ -7,13 +7,6 @@ package users
 
 // func updateUserDetailHandler(ctx *gin.Context)
 
-// func getUserNotificationsHandler(ctx *gin.Context)
-	// create a DB call in users DB and fetch all notifications from the notifications model where the user id matches
-
-// func deleteUserNotificationHandler(ctx *gin.Context)
-
-// func markUserNotificationAsReadHandler(ctx *gin.Context)
-
 // func getUserQuestionsHandler(ctx *gin.Context)
 	// create a DB call in posts DB and fetch all questions from the question model where the created_by_user is the user id
 

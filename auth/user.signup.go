@@ -20,11 +20,6 @@ func (ac *AuthController) signUpHandler(mail_channel chan mail.Mail) gin.Handler
 			return
 		}
 
-		if payload.Password != payload.PasswordConfirm {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Passwords do not match"})
-			return
-		}
-
 		hashedPassword, err := HashPassword(payload.Password)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})

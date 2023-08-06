@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/campus-fora/middleware"
@@ -21,14 +20,12 @@ func NewUserController(DB *gorm.DB) UserController {
 func whoamiHandler(ctx *gin.Context) {
 	middleware.Authenticator()(ctx)
 	user_id := middleware.GetUserID(ctx)
-	fmt.Print("yo_user")
 	if user_id == "" {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Null user id2"})
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "Null user id"})
 		return
 	}
 	if !UserExists(user_id) {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "the user belonging to this token does not exist"})
-
+		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "user does not exist"})
 	}
 
 	var currentUser User
@@ -42,8 +39,6 @@ func whoamiHandler(ctx *gin.Context) {
 		Name:      currentUser.Name,
 		Email:     currentUser.Email,
 		Role:      currentUser.Role,
-		CreatedAt: currentUser.CreatedAt,
-		UpdatedAt: currentUser.UpdatedAt,
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"user": userResponse}})

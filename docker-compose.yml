@@ -28,7 +28,7 @@ services:
   # elasticsearch:
   #   image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
   #   ports:
-  #     - 9200:9200    
+  #     - 9200:9200
   server:
     build:
       context: .

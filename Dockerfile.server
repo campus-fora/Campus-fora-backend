@@ -3,7 +3,7 @@ FROM golang:1.20
 WORKDIR /go/src/campus-fora-backend
 
 RUN apt-get update
-RUN apt-get install -y vim nginx
+RUN apt-get install -y vim nginx git
 
 RUN go install github.com/cosmtrek/air@latest
 
