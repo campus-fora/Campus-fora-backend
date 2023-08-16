@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/campus-fora/middleware"
+	"github.com/campus-fora/users"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -48,11 +49,17 @@ func createAnswerHandler(ctx *gin.Context) {
 		return
 	}
 	userId := middleware.GetUserId(ctx)
+	err, userName := users.GetUserNameByID(ctx, userId)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	answer = &Answer{
 		UUID:          uuid.New(),
 		ParentID:      answer.ParentID,
 		Content:       answer.Content,
 		CreatedByUser: userId,
+		CreatedByUserName: userName,
 	}
 
 	if err := createAnswer(ctx, answer, userId); err != nil {

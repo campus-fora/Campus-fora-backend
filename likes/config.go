@@ -47,7 +47,7 @@ func initDB() {
 		panic(err)
 	}
 	db = database
-	err = db.AutoMigrate(&UserLike{}, &TotalLikeCount{}, &DailyLikeCount{})
+	err = db.AutoMigrate(&UserLike{}, &DailyLikeCount{})
 	if err != nil {
 		log.Print("Error in automigrating likes DB:\n", err)
 		panic(err)

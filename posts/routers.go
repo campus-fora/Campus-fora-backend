@@ -12,10 +12,11 @@ func InitRouters(router *gin.Engine) {
 		posts.PUT("/topic/:tid", updateTopicHandler)
 		posts.DELETE("/topic/:tid", deleteTopicHandler)
 		posts.GET("/topic/:tid/tags", getAllTopicTagsHandler)
+		posts.POST("/tag", addTagHandler)
 
 		posts.GET("/:tid/questions", getAllQuestionsDetailHandler)
 		posts.GET("/question/:qid", getQuestionWithoutAnswersHandler)
-		// posts.GET("/question/paginated", getLimitedQuestionsHandler)
+		posts.GET("/:tid/paginated-questions", getPaginatedQuestionsHandler)
 		// posts.GET("/question/tags", getQuestionsByTagsHandler)
 		posts.GET("/question/relevancy/:pageSize/:page", getLimitedQuestionByRelevancy)
 		posts.POST("/question", createNewQuestionHandler)

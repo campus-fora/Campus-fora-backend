@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/campus-fora/posts"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/viper"
@@ -113,7 +114,7 @@ func openBatchUpdaterQueue() (<-chan amqp.Delivery, error) {
 
 func batchUpdater() {
 
-	batchUpdaterDB, err := openDBConn()
+	batchUpdaterDB, err := posts.OpenDBConn()
 	if err != nil {
 		log.Print("Error in connecting to likes DB:\n", err)
 		panic(err)

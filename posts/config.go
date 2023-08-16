@@ -31,7 +31,7 @@ func initCache() {
 	fmt.Println("Successfully connected to Redis")
 }
 
-func initDB() {
+func OpenDBConn()(*gorm.DB, error) {
 	host := viper.GetString("DATABASE.HOST")
 	port := viper.GetString("DATABASE.PORT")
 	password := "postkaadmin"
@@ -44,13 +44,23 @@ func initDB() {
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
+		return nil, err
+	}
+
+	return database, nil
+}
+
+func initDB() {
+	database, err := OpenDBConn()
+
+	if err != nil {
 		fmt.Print("Error in opening connection to posts DB:\n", err)
 		panic(err)
 	}
 
 	db = database
 
-	err = db.AutoMigrate(&Topic{} , &Question{}, &Tag{}, &Answer{}, &Comment{}, &UserStarredQuestions{})
+	err = db.AutoMigrate(&Topic{} , &Question{}, &Tag{}, &Answer{}, &Comment{}, &UserStarredQuestions{}, &LikeCount{})
 	if err != nil {
 		fmt.Print("Error in automigrating posts DB:\n", err)
 		panic(err)
