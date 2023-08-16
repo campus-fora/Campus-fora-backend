@@ -26,16 +26,16 @@ func updateBatchLikeCount(db *gorm.DB, postId uuid.UUID, newVoteCount LikeCountB
 
 func fetchLikesCountForPost(ctx *gin.Context, postId uuid.UUID) (DailyLikeCount, error) {
 	var dailyCount DailyLikeCount
-	var totalCount TotalLikeCount
+	// var totalCount TotalLikeCount
 	tx := db.WithContext(ctx).Model(&DailyLikeCount{}).FirstOrCreate(&dailyCount, DailyLikeCount{PostID: postId})
 	if(tx.Error != nil){
 		return DailyLikeCount{}, tx.Error
 	}
-	tx = db.WithContext(ctx).Model(&TotalLikeCount{}).FirstOrCreate(&totalCount, TotalLikeCount{PostID: postId})
-	if(tx.Error != nil){
-		return DailyLikeCount{}, tx.Error
-	}
-	return DailyLikeCount{PostID: postId, LikeCount: dailyCount.LikeCount + totalCount.LikeCount, DislikeCount: dailyCount.DislikeCount + totalCount.DislikeCount}, tx.Error
+	// tx = db.WithContext(ctx).Model(&TotalLikeCount{}).FirstOrCreate(&totalCount, TotalLikeCount{PostID: postId})
+	// if(tx.Error != nil){
+	// 	return DailyLikeCount{}, tx.Error
+	// }
+	return DailyLikeCount{PostID: postId, LikeCount: dailyCount.LikeCount, DislikeCount: dailyCount.DislikeCount}, tx.Error
 }
 
 func fetchLikeStatus(ctx *gin.Context, postId uuid.UUID, userId uint) (int, error) {

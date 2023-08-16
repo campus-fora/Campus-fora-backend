@@ -24,6 +24,7 @@ type Question struct {
 	Content              string                 `json:"content"`
 	CreatedByUser        uint                   `json:"created_by_user"`
 	CreatedByUserName    string                 `json:"created_by_user_name"`
+	LikeCount            LikeCount              `gorm:"foreignKey:PostID"`
 	Answers              []Answer               `gorm:"foreignKey:ParentID" json:"answers"`
 	Tags                 []Tag                  `gorm:"many2many:question_tags;" json:"tags"`
 	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:QuestionId"`
@@ -48,6 +49,7 @@ type Answer struct {
 	IsAnswer          bool           `json:"is_answer"`
 	CreatedByUser     uint           `json:"created_by_user"`
 	CreatedByUserName string         `json:"created_by_user_name"`
+	LikeCount         LikeCount      `gorm:"foreignKey:PostID"`
 	Comments          []Comment      `gorm:"foreignKey:ParentID" json:"comments"`
 }
 
@@ -74,4 +76,16 @@ type UserStarredQuestions struct {
 	UserID     uint           `gorm:"primaryKey"`
 	QuestionId uuid.UUID      `gorm:"primaryKey"`
 	DeletedAt  gorm.DeletedAt `gorm:"index"`
+}
+
+// type TotalLikeCount struct {
+// 	PostID       uuid.UUID `gorm:"index:total_like_idx;primaryKey"`
+// 	LikeCount    int
+// 	DislikeCount int
+// }
+
+type LikeCount struct {
+	PostID       uuid.UUID `gorm:"post_id;primaryKey"`
+	LikeCount    int       `gorm:"like_count" json:"likeCount"`
+	DislikeCount int       `gorm:"dislike_count" json:"dislikeCount"`
 }

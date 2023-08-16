@@ -5,7 +5,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/campus-fora/middleware"
 	"github.com/campus-fora/stats"
+	"github.com/campus-fora/users"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -19,7 +21,7 @@ type allQuestionResponse struct {
 	Tags          []Tag     `json:"tags"`
 }
 
-type questionDetailResponse struct {
+type QuestionDetailResponse struct {
 	UUID              uuid.UUID `json:"uuid"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
@@ -29,10 +31,12 @@ type questionDetailResponse struct {
 	CreatedByUserName string    `json:"created_by_user_name"`
 	AnswerIds         string    `json:"answer_ids"`
 	Tags              []Tag     `json:"tags" gorm:"many2many:question_tags;"`
+	LikeCount         uint      `json:"like_count"`
+	DislikeCount      uint      `json:"dislike_count"`
 }
 
 func getAllQuestionsDetailHandler(ctx *gin.Context) {
-	var questions []questionDetailResponse
+	var questions []QuestionDetailResponse
 
 	// err := getAllQuestionDetailsCache(ctx, &questions)
 	// if err == nil {
@@ -58,9 +62,8 @@ func getAllQuestionsDetailHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if QuestionExists(tid) {
+	if !QuestionExists(tid) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Question does not exists"})
-
 	}
 
 	err = fetchAllQuestionDetails(ctx, uint(tid), &questions)
@@ -72,6 +75,38 @@ func getAllQuestionsDetailHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, questions)
 }
 
+func getPaginatedQuestionsHandler(ctx *gin.Context) {
+	tid, err := strconv.ParseUint(ctx.Param("tid"), 10, 32)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	sortBy := ctx.Query("sortBy")
+	tags := ctx.QueryArray("tag")
+	var tagIds []uint
+	for _, tag := range tags {
+		tagId, err := strconv.ParseUint(tag, 10, 32)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		tagIds = append(tagIds, uint(tagId))
+	}
+	lastKeySetValue := ctx.Query("lastKeySetValue")
+	limit, err := strconv.ParseUint(ctx.Query("limit"), 10, 32)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var questions []QuestionDetailResponse
+	err = fetchFilteredAndPaginatedQuestions(ctx, uint(tid), sortBy, tagIds, lastKeySetValue, int(limit), &questions)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, questions)
+}
+
 func createNewQuestionHandler(ctx *gin.Context) {
 	var question *Question
 
@@ -79,13 +114,36 @@ func createNewQuestionHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	question.UUID = uuid.New()
-	if err := createQuestion(ctx, question); err != nil {
+	userId := middleware.GetUserId(ctx)
+	err, userName := users.GetUserNameByID(ctx, userId)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	var tagIds []uint
+	for _, tag := range question.Tags {
+		tagIds = append(tagIds, tag.ID)
+	}
+	err = fetchTagsWithIds(ctx, &question.Tags, tagIds)
+	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	question = &Question{
+		UUID:              uuid.New(),
+		TopicID:           question.TopicID,
+		Title:             question.Title,
+		Content:           question.Content,
+		CreatedByUser:     userId,
+		CreatedByUserName: userName,
+		Tags:              question.Tags,
+	}
+
+	if err := createQuestion(ctx, question); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	// go setQuestionCache(ctx, question)
 
 	ctx.JSON(http.StatusOK, question)
