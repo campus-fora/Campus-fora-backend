@@ -8,6 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type AnswerRequest struct {
+	ParentID uuid.UUID `json:"parentId"`
+	Content  string    `json:"content"`
+}
+
 func getAnswerByUUIDHandler(ctx *gin.Context) {
 	var answer Answer
 	aid, err := uuid.Parse(ctx.Param("aid"))
@@ -42,16 +47,16 @@ func getAllAnswersWithUUIDsHandler(ctx *gin.Context) {
 }
 
 func createAnswerHandler(ctx *gin.Context) {
-	var answer *Answer
-	if err := ctx.ShouldBindJSON(&answer); err != nil {
+	var answerRequest *AnswerRequest
+	if err := ctx.ShouldBindJSON(&answerRequest); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	userId := middleware.GetUserId(ctx)
-	answer = &Answer{
+	answer := &Answer{
 		UUID:          uuid.New(),
-		ParentID:      answer.ParentID,
-		Content:       answer.Content,
+		ParentID:      answerRequest.ParentID,
+		Content:       answerRequest.Content,
 		CreatedByUser: userId,
 	}
 
