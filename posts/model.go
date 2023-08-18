@@ -28,6 +28,13 @@ type Question struct {
 	Answers              []Answer               `gorm:"foreignKey:ParentID" json:"answers"`
 	Tags                 []Tag                  `gorm:"many2many:question_tags;" json:"tags"`
 	UserStarredQuestions []UserStarredQuestions `gorm:"foreignKey:QuestionId"`
+	ReportedByUser       []ReportedByUser       `gorm:"foreignKey:QuestionId"`
+}
+
+type ReportedByUser struct {
+	QuestionId uint `gorm:"primaryKey"`
+	UserID     uint `gorm:"primaryKey"`
+	Reason     string
 }
 
 type QuestionRelevancy struct {
