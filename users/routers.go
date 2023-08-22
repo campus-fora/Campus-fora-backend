@@ -5,15 +5,15 @@ import (
 )
 
 func InitRouters(router *gin.Engine) {
-	// users := router.Group("/api/users")
-	// {
-	// 	// users.GET("/:id", getUserDetailHandler)
-	// 	// users.PUT("/:id", updateUserDetailHandler)
-	// 	// users.GET("/:id/questions", getUserQuestionsHandler)
-	// 	// users.GET("/:id/answers", getUserStarredQuestionHandler)
-	// 	// users.GET("/:id/notifications", getUserNotificationHandler)
-	// 	// users.DELETE("/:id/notifications/:notificationId", deleteUserNotificationHandler)
-	// 	// users.PUT("/:id/notifications/:notificationId", markUserNotificationAsReadHandler)
-	// 	// 
-	// }
+	users := router.Group("/api/users")
+	{
+		users.GET("/", getUserDetailHandler)
+		users.PUT("/", updateUserDetailHandler)
+		users.GET("/questions", getUserQuestionsHandler)
+		users.GET("/liked", getUserLikedQuestionsHandler)
+		// 	// users.GET("/:id/notifications", getUserNotificationHandler)
+		// 	// users.DELETE("/:id/notifications/:notificationId", deleteUserNotificationHandler)
+		// 	// users.PUT("/:id/notifications/:notificationId", markUserNotificationAsReadHandler)
+		// 	//
+	}
 }

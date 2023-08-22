@@ -24,6 +24,10 @@ func main() {
 	})
 
 	g.Go(func() error {
+		return usersServer().ListenAndServe()
+	})
+
+	g.Go(func() error {
 		return notificationServer().ListenAndServe()
 	})
 

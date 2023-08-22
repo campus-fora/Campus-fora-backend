@@ -6,8 +6,7 @@ import (
 )
 
 type UserDetails struct {
-	gorm.Model
-	UserID     uint
+	UserID     uint   `gorm:"primaryKey" json:"user_id"` // primary key
 	Department string `json:"department"`
 	Program    string `json:"program"`
 	Year       string `json:"year"`
@@ -19,7 +18,6 @@ type UserDetails struct {
 
 type User struct {
 	gorm.Model
-	UserId             string               `json:"user_id"`
 	Email              string               `json:"email"`
 	Password           string               `json:"password"`
 	Role               constants.Role       `json:"role_id"`
@@ -45,13 +43,12 @@ type TemporaryUser struct {
 
 type UserQuestions struct {
 	gorm.Model
-	UserID     uint
+	UserID     uint `gorm:"primaryKey" json:"user_id"` // primary key
 	QuestionId uint
 }
 
 type UserLikedQuestions struct {
-	gorm.Model
-	UserID     uint
+	UserID     uint `gorm:"primaryKey" json:"user_id"` // primary key
 	QuestionId uint
 }
 
